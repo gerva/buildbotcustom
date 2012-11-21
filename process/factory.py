@@ -766,6 +766,9 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                  enableInstaller=False,
                  gaiaRepo=None,
                  gaiaRevision=None,
+                 gaiaLanguagesFile=None,
+                 gaiaLanguagesScript=None,
+                 gaiaLanguagesConfig=None,
                  **kwargs):
         MozillaBuildFactory.__init__(self, **kwargs)
 
@@ -838,6 +841,9 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
         self.runAliveTests = runAliveTests
         self.gaiaRepo = gaiaRepo
         self.gaiaRevision = gaiaRevision
+        self.gaiaLanguagesFile = gaiaLanguagesFile
+        self.gaiaLanguagesScript = gaiaLanguagesScript
+        self.gaiaLanguagesConfig = gaiaLanguagesConfig
 
         assert len(self.tooltool_url_list) <= 1, "multiple urls not currently supported by tooltool"
 
@@ -1135,6 +1141,23 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                 mirrors=['%s/%s' % (url, self.gaiaRepo) for url in self.baseMirrorUrls],
                 bundles=[],
             ))
+            if self.gaiaLanguagesFile:
+                # call mozharness script that will checkout all of the repos
+                # it should only need the languages file path passed to it
+                # need to figure out what to pass to the build system to make
+                # gaia create a multilocale profile, too
+                self.addStep(MockCommand(
+                    name='clone_gaia_repos',
+                    command=['python', 'mozharness/%s' % self.gaiaLanguagesScript,
+                             '--config-file', self.gaiaLanguagesConfig,
+                             '--gaia-languages-file', self.gaiaLanguagesFile],
+                    env=self.env,
+                    workdir=WithProperties('%(basedir)s'),
+                    haltOnFailure=True,
+                    mock=self.use_mock,
+                    target=self.mock_target,
+                    mock_workdir_prefix=None,
+                ))
         self.addStep(SetBuildProperty(
             name='set_comments',
             property_name="comments",
