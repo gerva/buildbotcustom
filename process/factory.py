@@ -52,7 +52,7 @@ reload(release.paths)
 from buildbotcustom.status.errors import purge_error, global_errors, \
   upload_errors, talos_hgweb_errors, tegra_errors
 from buildbotcustom.steps.base import ShellCommand, SetProperty, Mercurial, \
-  Trigger, RetryingShellCommand, RetryingSetProperty
+  Trigger, RetryingShellCommand
 from buildbotcustom.steps.misc import TinderboxShellCommand, SendChangeStep, \
   MozillaClobberer, FindFile, DownloadFile, UnpackFile, \
   SetBuildProperty, DisconnectStep, OutputStep, \
@@ -948,14 +948,17 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
             self.addStep(ShellCommand(command=['ccache', '-z'],
                      name="clear_ccache_stats", warnOnFailure=False,
                      flunkOnFailure=False, haltOnFailure=False, env=self.env))
+        if mozharnessRepoPath:
+            assert mozharnessRepoPath and mozharnessTag
+            self.mozharnessRepoPath = mozharnessRepoPath
+            self.mozharnessTag = mozharnessTag
+            self.addMozharnessRepoSteps()
         if multiLocale:
             assert compareLocalesRepoPath and compareLocalesTag
             assert mozharnessRepoPath and mozharnessTag
             assert multiLocaleScript and multiLocaleConfig
             self.compareLocalesRepoPath = compareLocalesRepoPath
             self.compareLocalesTag = compareLocalesTag
-            self.mozharnessRepoPath = mozharnessRepoPath
-            self.mozharnessTag = mozharnessTag
             self.multiLocaleScript = multiLocaleScript
             self.multiLocaleConfig = multiLocaleConfig
             self.multiLocaleMerge = multiLocaleMerge
@@ -1002,33 +1005,57 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
         if self.buildsBeforeReboot and self.buildsBeforeReboot > 0:
             self.addPeriodicRebootSteps()
 
+    def addMozharnessRepoSteps(self):
+        name=self.mozharnessRepoPath.rstrip('/').split('/')[-1]
+        self.addStep(ShellCommand(
+            name='rm_%s'%name,
+            command=['rm', '-rf', '%s' % name],
+            description=['removing', name],
+            descriptionDone=['remove', name],
+            haltOnFailure=True,
+            workdir='.',
+        ))
+        self.addStep(MercurialCloneCommand(
+            name='hg_clone_%s' % name,
+            command=['hg', 'clone', self.getRepository(self.mozharnessRepoPath), name],
+            description=['checking', 'out', name],
+            descriptionDone=['checkout', name],
+            haltOnFailure=True,
+            workdir='.',
+        ))
+        self.addStep(ShellCommand(
+            name='hg_update_%s'% name,
+            command=['hg', 'update', '-r', self.mozharnessTag],
+            description=['updating', name, 'to', self.mozharnessTag],
+            workdir=name,
+            haltOnFailure=True
+        ))
+
     def addMultiLocaleRepoSteps(self):
-        for repo,tag in ((self.compareLocalesRepoPath,self.compareLocalesTag),
-                            (self.mozharnessRepoPath,self.mozharnessTag)):
-            name=repo.rstrip('/').split('/')[-1]
-            self.addStep(ShellCommand(
-                name='rm_%s'%name,
-                command=['rm', '-rf', '%s' % name],
-                description=['removing', name],
-                descriptionDone=['remove', name],
-                haltOnFailure=True,
-                workdir='.',
-            ))
-            self.addStep(MercurialCloneCommand(
-                name='hg_clone_%s' % name,
-                command=['hg', 'clone', self.getRepository(repo), name],
-                description=['checking', 'out', name],
-                descriptionDone=['checkout', name],
-                haltOnFailure=True,
-                workdir='.',
-            ))
-            self.addStep(ShellCommand(
-                name='hg_update_%s'% name,
-                command=['hg', 'update', '-r', tag],
-                description=['updating', name, 'to', tag],
-                workdir=name,
-                haltOnFailure=True
-           ))
+        name=self.compareLocalesRepoPath.rstrip('/').split('/')[-1]
+        self.addStep(ShellCommand(
+            name='rm_%s'%name,
+            command=['rm', '-rf', '%s' % name],
+            description=['removing', name],
+            descriptionDone=['remove', name],
+            haltOnFailure=True,
+            workdir='.',
+        ))
+        self.addStep(MercurialCloneCommand(
+            name='hg_clone_%s' % name,
+            command=['hg', 'clone', self.getRepository(self.compareLocalesRepoPath), name],
+            description=['checking', 'out', name],
+            descriptionDone=['checkout', name],
+            haltOnFailure=True,
+            workdir='.',
+        ))
+        self.addStep(ShellCommand(
+            name='hg_update_%s'% name,
+            command=['hg', 'update', '-r', self.compareLocalesTag],
+            description=['updating', name, 'to', self.compareLocalesTag],
+            workdir=name,
+            haltOnFailure=True
+        ))
 
 
     def addTriggeredBuildsSteps(self,

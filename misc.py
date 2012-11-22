@@ -1231,6 +1231,7 @@ def generateBranchObjects(config, name, secrets=None):
                 'gaiaLanguagesFile': pf.get('gaia_languages_file'),
                 'gaiaLanguagesScript': pf.get('gaia_languages_script', 'scripts/b2g_build.py'),
                 'mozharnessRepoPath': config.get('mozharness_repo_path'),
+                'mozharnessTag': config.get('mozharness_tag'),
             }
             factory_kwargs.update(extra_args)
 
@@ -1498,6 +1499,7 @@ def generateBranchObjects(config, name, secrets=None):
                 gaiaLanguagesFile=pf.get('gaia_languages_file'),
                 gaiaLanguagesScript=pf.get('gaia_languages_script', 'scripts/b2g_build.py'),
                 mozharnessRepoPath=config.get('mozharness_repo_path'),
+                mozharnessTag=config.get('mozharness_tag'),
                 **nightly_kwargs
             )
 
