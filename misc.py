@@ -1229,8 +1229,7 @@ def generateBranchObjects(config, name, secrets=None):
                 'gaiaRepo': pf.get('gaia_repo'),
                 'gaiaRevision': config.get('gaia_revision'),
                 'gaiaLanguagesFile': config.get('gaia_languages_file'),
-                'gaiaLanguagesScript': config.get('gaia_languages_script'),
-                'gaiaLanguagesConfig': config.get('gaia_languages_config'),
+                'gaiaLanguagesScript': config.get('gaia_languages_script', 'scripts/b2g_build.py'),
             }
             factory_kwargs.update(extra_args)
 
@@ -1496,8 +1495,7 @@ def generateBranchObjects(config, name, secrets=None):
                 gaiaRepo=pf.get('gaia_repo'),
                 gaiaRevision=config.get('gaia_revision'),
                 gaiaLanguagesFile=config.get('gaia_languages_file'),
-                gaiaLanguagesScript=config.get('gaia_languages_script'),
-                gaiaLanguagesConfig=config.get('gaia_languages_config'),
+                gaiaLanguagesScript=config.get('gaia_languages_script', 'scripts/b2g_build.py'),
                 **nightly_kwargs
             )
 

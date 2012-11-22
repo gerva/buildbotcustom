@@ -768,7 +768,6 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                  gaiaRevision=None,
                  gaiaLanguagesFile=None,
                  gaiaLanguagesScript=None,
-                 gaiaLanguagesConfig=None,
                  **kwargs):
         MozillaBuildFactory.__init__(self, **kwargs)
 
@@ -843,7 +842,6 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
         self.gaiaRevision = gaiaRevision
         self.gaiaLanguagesFile = gaiaLanguagesFile
         self.gaiaLanguagesScript = gaiaLanguagesScript
-        self.gaiaLanguagesConfig = gaiaLanguagesConfig
 
         assert len(self.tooltool_url_list) <= 1, "multiple urls not currently supported by tooltool"
 
@@ -1149,8 +1147,8 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                 self.addStep(MockCommand(
                     name='clone_gaia_repos',
                     command=['python', 'mozharness/%s' % self.gaiaLanguagesScript,
-                             '--config-file', self.gaiaLanguagesConfig,
-                             '--gaia-languages-file', self.gaiaLanguagesFile],
+                             '--gaia-languages-file', self.gaiaLanguagesFile,
+                             '--checkout-gaia-l10n'],
                     env=self.env,
                     workdir=WithProperties('%(basedir)s'),
                     haltOnFailure=True,
