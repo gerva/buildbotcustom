@@ -1169,7 +1169,7 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                 bundles=[],
             ))
             if self.gaiaLanguagesFile:
-                languagesFile = '%(basedir)s/build/' + self.gaiaLanguagesFile
+                languagesFile = '%(basedir)s/build/gaia/' + self.gaiaLanguagesFile
                 # call mozharness script that will checkout all of the repos
                 # it should only need the languages file path passed to it
                 # need to figure out what to pass to the build system to make
