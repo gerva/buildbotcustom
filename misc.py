@@ -1228,8 +1228,8 @@ def generateBranchObjects(config, name, secrets=None):
                 'runAliveTests': pf.get('run_alive_tests', True),
                 'gaiaRepo': pf.get('gaia_repo'),
                 'gaiaRevision': config.get('gaia_revision'),
-                'gaiaLanguagesFile': config.get('gaia_languages_file'),
-                'gaiaLanguagesScript': config.get('gaia_languages_script', 'scripts/b2g_build.py'),
+                'gaiaLanguagesFile': pf.get('gaia_languages_file'),
+                'gaiaLanguagesScript': pf.get('gaia_languages_script', 'scripts/b2g_build.py'),
             }
             factory_kwargs.update(extra_args)
 
@@ -1494,8 +1494,8 @@ def generateBranchObjects(config, name, secrets=None):
                 tooltool_url_list=config.get('tooltool_url_list', []),
                 gaiaRepo=pf.get('gaia_repo'),
                 gaiaRevision=config.get('gaia_revision'),
-                gaiaLanguagesFile=config.get('gaia_languages_file'),
-                gaiaLanguagesScript=config.get('gaia_languages_script', 'scripts/b2g_build.py'),
+                gaiaLanguagesFile=pf.get('gaia_languages_file'),
+                gaiaLanguagesScript=pf.get('gaia_languages_script', 'scripts/b2g_build.py'),
                 **nightly_kwargs
             )
 

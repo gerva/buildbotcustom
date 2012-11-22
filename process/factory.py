@@ -1145,7 +1145,7 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                 # need to figure out what to pass to the build system to make
                 # gaia create a multilocale profile, too
                 self.addStep(MockCommand(
-                    name='clone_gaia_repos',
+                    name='clone_gaia_l10n_repos',
                     command=['python', 'mozharness/%s' % self.gaiaLanguagesScript,
                              '--gaia-languages-file', self.gaiaLanguagesFile,
                              '--checkout-gaia-l10n'],
