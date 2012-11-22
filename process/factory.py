@@ -1169,6 +1169,7 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                 bundles=[],
             ))
             if self.gaiaLanguagesFile:
+                languagesFile = '%(basedir)s/build/' + self.gaiaLanguagesFile
                 # call mozharness script that will checkout all of the repos
                 # it should only need the languages file path passed to it
                 # need to figure out what to pass to the build system to make
@@ -1176,7 +1177,7 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                 self.addStep(MockCommand(
                     name='clone_gaia_l10n_repos',
                     command=['python', 'mozharness/%s' % self.gaiaLanguagesScript,
-                             '--gaia-languages-file', self.gaiaLanguagesFile,
+                             '--gaia-languages-file', WithProperties(languagesFile),
                              '--gaia-l10n-root', self.gaiaL10nRoot],
                     env=self.env,
                     workdir=WithProperties('%(basedir)s'),
