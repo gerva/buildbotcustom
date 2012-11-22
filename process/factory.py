@@ -1177,7 +1177,7 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                     name='clone_gaia_l10n_repos',
                     command=['python', 'mozharness/%s' % self.gaiaLanguagesScript,
                              '--gaia-languages-file', self.gaiaLanguagesFile,
-                             '--gaia-l10n-root' % self.gaiaL10nRoot],
+                             '--gaia-l10n-root', self.gaiaL10nRoot],
                     env=self.env,
                     workdir=WithProperties('%(basedir)s'),
                     haltOnFailure=True,
