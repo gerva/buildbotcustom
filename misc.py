@@ -1230,7 +1230,7 @@ def generateBranchObjects(config, name, secrets=None):
                 'gaiaRevision': config.get('gaia_revision'),
                 'gaiaLanguagesFile': pf.get('gaia_languages_file'),
                 'gaiaLanguagesScript': pf.get('gaia_languages_script', 'scripts/clone_gaia_locales.py'),
-                'gaiaL10nRoot': config.get('gaia_l10n_root')
+                'gaiaL10nRoot': config.get('gaia_l10n_root'),
                 'mozharnessRepoPath': config.get('mozharness_repo_path'),
                 'mozharnessTag': config.get('mozharness_tag'),
             }
@@ -1499,7 +1499,7 @@ def generateBranchObjects(config, name, secrets=None):
                 gaiaRevision=config.get('gaia_revision'),
                 gaiaLanguagesFile=pf.get('gaia_languages_file'),
                 gaiaLanguagesScript=pf.get('gaia_languages_script', 'scripts/clone_gaia_locales.py'),
-                gaiaL10nRoot=config.get('gaia_l10n_root')
+                gaiaL10nRoot=config.get('gaia_l10n_root'),
                 mozharnessRepoPath=config.get('mozharness_repo_path'),
                 mozharnessTag=config.get('mozharness_tag'),
                 **nightly_kwargs
