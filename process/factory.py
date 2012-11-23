@@ -977,7 +977,8 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
             self.gaiaLanguagesFile = gaiaLanguagesFile
             self.gaiaLanguagesScript = gaiaLanguagesScript
             self.gaiaL10nRoot = gaiaL10nRoot
-            self.env['LOCALE_BASEDIR'] = WithProperties('%(basedir)s/build/gaia-l10n')
+            self.gaiaL10nBaseDir = WithProperties('%(basedir)s/build-gaia-l10n')
+            self.env['LOCALE_BASEDIR'] = self.gaiaL10nBaseDir
 
         self.addBuildSteps()
         if self.uploadSymbols or (not self.disableSymbols and (self.packageTests or self.leakTest)):
