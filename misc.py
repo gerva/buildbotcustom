@@ -1375,7 +1375,6 @@ def generateBranchObjects(config, name, secrets=None):
                 multiargs['compareLocalesRepoPath'] = config['compare_locales_repo_path']
                 multiargs['compareLocalesTag'] = config['compare_locales_tag']
                 multiargs['mozharnessRepoPath'] = config['mozharness_repo_path']
-                multiargs['mozharnessTag'] = config['mozharness_tag']
                 multi_config_name = 'multi_locale/%s_%s.json' % (name, platform)
                 if 'android' in platform:
                     multiargs['multiLocaleScript'] = 'scripts/multil10n.py'
