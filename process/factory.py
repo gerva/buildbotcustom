@@ -841,9 +841,6 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
         self.runAliveTests = runAliveTests
         self.gaiaRepo = gaiaRepo
         self.gaiaRevision = gaiaRevision
-        self.gaiaLanguagesFile = gaiaLanguagesFile
-        self.gaiaLanguagesScript = gaiaLanguagesScript
-        self.gaiaL10nRoot = gaiaL10nRoot
 
         assert len(self.tooltool_url_list) <= 1, "multiple urls not currently supported by tooltool"
 
@@ -974,6 +971,13 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
             self.addMultiLocaleRepoSteps()
 
         self.multiLocale = multiLocale
+
+        if gaiaLanguagesFile:
+            assert gaiaLanguagesScript and gaiaL10nRoot
+            self.gaiaLanguagesFile = gaiaLanguagesFile
+            self.gaiaLanguagesScript = gaiaLanguagesScript
+            self.gaiaL10nRoot = gaiaL10nRoot
+            self.env['LOCALE_BASEDIR'] = WithProperties('%(basedir)s/build/gaia-l10n')
 
         self.addBuildSteps()
         if self.uploadSymbols or (not self.disableSymbols and (self.packageTests or self.leakTest)):
@@ -1178,7 +1182,8 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                     name='clone_gaia_l10n_repos',
                     command=['python', 'mozharness/%s' % self.gaiaLanguagesScript,
                              '--gaia-languages-file', WithProperties(languagesFile),
-                             '--gaia-l10n-root', self.gaiaL10nRoot],
+                             '--gaia-l10n-root', self.gaiaL10nRoot,
+                             '--gaia-l10n-base-dir', self.gaiaL10nBaseDir],
                     env=self.env,
                     workdir=WithProperties('%(basedir)s'),
                     haltOnFailure=True,
