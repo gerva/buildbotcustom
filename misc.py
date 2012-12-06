@@ -1375,10 +1375,13 @@ def generateBranchObjects(config, name, secrets=None):
                 multiargs['compareLocalesRepoPath'] = config['compare_locales_repo_path']
                 multiargs['compareLocalesTag'] = config['compare_locales_tag']
                 multi_config_name = 'multi_locale/%s_%s.json' % (name, platform)
-                if 'android' in platform:
-                    multiargs['multiLocaleScript'] = 'scripts/multil10n.py'
-                elif 'maemo' in platform:
-                    multiargs['multiLocaleScript'] = 'scripts/maemo_multi_locale_build.py'
+                if config.get('product_name') == 'b2g':
+                    multiargs['multiLocaleScript'] = TODO
+                else:
+                    if 'android' in platform:
+                        multiargs['multiLocaleScript'] = 'scripts/multil10n.py'
+                    elif 'maemo' in platform:
+                        multiargs['multiLocaleScript'] = 'scripts/maemo_multi_locale_build.py'
                 multiargs['multiLocaleConfig'] = multi_config_name
 
             create_snippet = config['create_snippet']
