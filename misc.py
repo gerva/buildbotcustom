@@ -1164,6 +1164,20 @@ def generateBranchObjects(config, name, secrets=None):
         if config.get('leak_target'):
             extra_args['leakTarget'] = config['leak_target']
 
+        multiargs = {}
+        if config.get('enable_multi_locale') and pf.get('multi_locale'):
+            multiargs['multiLocale'] = True
+            multiargs['multiLocaleMerge'] = config['multi_locale_merge']
+            multiargs['compareLocalesRepoPath'] = config['compare_locales_repo_path']
+            multiargs['compareLocalesTag'] = config['compare_locales_tag']
+            multi_config_name = 'multi_locale/%s_%s.json' % (name, platform)
+            if config.get('product_name') == 'b2g':
+                multiargs['multiLocaleScript'] = TODO
+            else:
+                if 'android' in platform:
+                    multiargs['multiLocaleScript'] = 'scripts/multil10n.py'
+            multiargs['multiLocaleConfig'] = multi_config_name
+
         # Some platforms shouldn't do dep builds (i.e. RPM)
         if pf.get('enable_dep', True):
             factory_kwargs = {
@@ -1236,6 +1250,7 @@ def generateBranchObjects(config, name, secrets=None):
                 'geckoL10nRoot': config.get('gecko_l10n_root'),
             }
             factory_kwargs.update(extra_args)
+            factory_kwargs.update(multiargs)
 
             mozilla2_dep_factory = factory_class(**factory_kwargs)
             #eg. TB Linux comm-central build
@@ -1368,20 +1383,6 @@ def generateBranchObjects(config, name, secrets=None):
                    nightly_builder in l10nNightlyBuilders:
                     triggeredSchedulers=[l10nNightlyBuilders[nightly_builder]['l10n_builder']]
 
-
-            multiargs = {}
-            if config.get('enable_multi_locale') and pf.get('multi_locale'):
-                multiargs['multiLocale'] = True
-                multiargs['multiLocaleMerge'] = config['multi_locale_merge']
-                multiargs['compareLocalesRepoPath'] = config['compare_locales_repo_path']
-                multiargs['compareLocalesTag'] = config['compare_locales_tag']
-                multi_config_name = 'multi_locale/%s_%s.json' % (name, platform)
-                if config.get('product_name') == 'b2g':
-                    multiargs['multiLocaleScript'] = TODO
-                else:
-                    if 'android' in platform:
-                        multiargs['multiLocaleScript'] = 'scripts/multil10n.py'
-                multiargs['multiLocaleConfig'] = multi_config_name
 
             create_snippet = config['create_snippet']
             if pf.has_key('create_snippet') and config['create_snippet']:
