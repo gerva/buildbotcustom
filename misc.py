@@ -1380,8 +1380,6 @@ def generateBranchObjects(config, name, secrets=None):
                 else:
                     if 'android' in platform:
                         multiargs['multiLocaleScript'] = 'scripts/multil10n.py'
-                    elif 'maemo' in platform:
-                        multiargs['multiLocaleScript'] = 'scripts/maemo_multi_locale_build.py'
                 multiargs['multiLocaleConfig'] = multi_config_name
 
             create_snippet = config['create_snippet']

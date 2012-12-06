@@ -753,7 +753,8 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                  compareLocalesRepoPath=None,
                  compareLocalesTag='RELEASE_AUTOMATION',
                  mozharnessRepoPath=None,
-                 mozharnessTag='default',
+                 # staging only
+                 mozharnessTag='gecko-multilocale',
                  multiLocaleScript=None,
                  multiLocaleConfig=None,
                  mozharnessMultiOptions=None,
@@ -950,7 +951,8 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
         if mozharnessRepoPath:
             assert mozharnessRepoPath and mozharnessTag
             self.mozharnessRepoPath = mozharnessRepoPath
-            self.mozharnessTag = mozharnessTag
+            # staging only
+            self.mozharnessTag = 'gecko-multilocale'
             self.addMozharnessRepoSteps()
         if multiLocale:
             assert compareLocalesRepoPath and compareLocalesTag
@@ -1181,12 +1183,19 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                 # it should only need the languages file path passed to it
                 # need to figure out what to pass to the build system to make
                 # gaia create a multilocale profile, too
+                additional_args = []
+                if self.multiLocale:
+                    # this is needed to point win32 at hg
+                    additional_args = ['--config-file', self.multiLocaleConfig]
                 self.addStep(MockCommand(
                     name='clone_gaia_l10n_repos',
                     command=['python', 'mozharness/%s' % self.gaiaLanguagesScript,
+                             '--pull',
+                             # TODO unhardcode
+                             '--gecko-l10n-root', 'http://hg.mozilla.org/l10n-central',
                              '--gaia-languages-file', WithProperties(languagesFile),
                              '--gaia-l10n-root', self.gaiaL10nRoot,
-                             '--gaia-l10n-base-dir', self.gaiaL10nBaseDir],
+                             '--gaia-l10n-base-dir', self.gaiaL10nBaseDir] + additional_args,
                     env=self.env,
                     workdir=WithProperties('%(basedir)s'),
                     haltOnFailure=True,
@@ -1908,6 +1917,8 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
         ))
 
     def addPostBuildCleanupSteps(self):
+        # staging only
+        return
         if self.nightly:
             self.addStep(ShellCommand(
              name='rm_builddir',
