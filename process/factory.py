@@ -1184,8 +1184,6 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                     name='clone_gaia_l10n_repos',
                     command=['python', 'mozharness/%s' % self.gaiaLanguagesScript,
                              '--pull',
-                             # TODO unhardcode
-                             '--gecko-l10n-root', 'http://hg.mozilla.org/l10n-central',
                              '--gaia-languages-file', WithProperties(languagesFile),
                              '--gaia-l10n-root', self.gaiaL10nRoot,
                              '--gaia-l10n-base-dir', self.gaiaL10nBaseDir,
