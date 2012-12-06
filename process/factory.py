@@ -770,6 +770,7 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                  gaiaLanguagesFile=None,
                  gaiaLanguagesScript=None,
                  gaiaL10nRoot=None,
+                 geckoL10nRoot=None,
                  **kwargs):
         MozillaBuildFactory.__init__(self, **kwargs)
 
@@ -1179,14 +1180,6 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
             ))
             if self.gaiaLanguagesFile:
                 languagesFile = '%(basedir)s/build/gaia/' + self.gaiaLanguagesFile
-                # call mozharness script that will checkout all of the repos
-                # it should only need the languages file path passed to it
-                # need to figure out what to pass to the build system to make
-                # gaia create a multilocale profile, too
-                additional_args = []
-                if self.multiLocale:
-                    # this is needed to point win32 at hg
-                    additional_args = ['--config-file', self.multiLocaleConfig]
                 self.addStep(MockCommand(
                     name='clone_gaia_l10n_repos',
                     command=['python', 'mozharness/%s' % self.gaiaLanguagesScript,
@@ -1195,7 +1188,9 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                              '--gecko-l10n-root', 'http://hg.mozilla.org/l10n-central',
                              '--gaia-languages-file', WithProperties(languagesFile),
                              '--gaia-l10n-root', self.gaiaL10nRoot,
-                             '--gaia-l10n-base-dir', self.gaiaL10nBaseDir] + additional_args,
+                             '--gaia-l10n-base-dir', self.gaiaL10nBaseDir,
+                             '--config-file', self.multiLocaleConfig,
+                             '--gecko-l10n-root', self.geckoL10nRoot],
                     env=self.env,
                     workdir=WithProperties('%(basedir)s'),
                     haltOnFailure=True,

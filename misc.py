@@ -1233,6 +1233,7 @@ def generateBranchObjects(config, name, secrets=None):
                 'gaiaL10nRoot': config.get('gaia_l10n_root'),
                 'mozharnessRepoPath': config.get('mozharness_repo_path'),
                 'mozharnessTag': config.get('mozharness_tag'),
+                'geckoL10nRoot': config.get('gecko_l10n_root'),
             }
             factory_kwargs.update(extra_args)
 
@@ -1369,7 +1370,7 @@ def generateBranchObjects(config, name, secrets=None):
 
 
             multiargs = {}
-            if config.get('enable_l10n') and config.get('enable_multi_locale') and pf.get('multi_locale'):
+            if config.get('enable_multi_locale') and pf.get('multi_locale'):
                 multiargs['multiLocale'] = True
                 multiargs['multiLocaleMerge'] = config['multi_locale_merge']
                 multiargs['compareLocalesRepoPath'] = config['compare_locales_repo_path']
@@ -1501,6 +1502,7 @@ def generateBranchObjects(config, name, secrets=None):
                 gaiaL10nRoot=config.get('gaia_l10n_root'),
                 mozharnessRepoPath=config.get('mozharness_repo_path'),
                 mozharnessTag=config.get('mozharness_tag'),
+                geckoL10nRoot=config.get('gecko_l10n_root'),
                 **nightly_kwargs
             )
 
