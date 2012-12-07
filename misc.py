@@ -1170,6 +1170,7 @@ def generateBranchObjects(config, name, secrets=None):
             multiargs['multiLocaleMerge'] = config['multi_locale_merge']
             multiargs['compareLocalesRepoPath'] = config['compare_locales_repo_path']
             multiargs['compareLocalesTag'] = config['compare_locales_tag']
+            multiargs['mozharnessMultiOptions'] = pf.get('mozharness_multi_options')
             if pf.get('product_name') == 'b2g':
                 multiargs['multiLocaleScript'] = 'scripts/clone_gaia_locales.py'
             else:
