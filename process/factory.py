@@ -771,6 +771,7 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                  gaiaLanguagesScript=None,
                  gaiaL10nRoot=None,
                  geckoL10nRoot=None,
+                 geckoLanguagesFile=None,
                  **kwargs):
         MozillaBuildFactory.__init__(self, **kwargs)
 
@@ -844,6 +845,7 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
         self.gaiaRepo = gaiaRepo
         self.gaiaRevision = gaiaRevision
         self.geckoL10nRoot = geckoL10nRoot
+        self.geckoLanguagesFile = geckoLanguagesFile
 
         assert len(self.tooltool_url_list) <= 1, "multiple urls not currently supported by tooltool"
 
@@ -1188,7 +1190,8 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                              '--gaia-l10n-root', self.gaiaL10nRoot,
                              '--gaia-l10n-base-dir', self.gaiaL10nBaseDir,
                              '--config-file', self.multiLocaleConfig,
-                             '--gecko-l10n-root', self.geckoL10nRoot],
+                             '--gecko-l10n-root', self.geckoL10nRoot,
+                             '--gecko-languages-file', self.geckoLanguagesFile],
                     env=self.env,
                     workdir=WithProperties('%(basedir)s'),
                     haltOnFailure=True,

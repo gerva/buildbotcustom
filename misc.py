@@ -1251,6 +1251,7 @@ def generateBranchObjects(config, name, secrets=None):
                 'mozharnessRepoPath': config.get('mozharness_repo_path'),
                 'mozharnessTag': config.get('mozharness_tag'),
                 'geckoL10nRoot': config.get('gecko_l10n_root'),
+                'geckoLanguagesFile': pf.get('gecko_languages_file'),
             }
             factory_kwargs.update(extra_args)
             factory_kwargs.update(multiargs)
@@ -1507,6 +1508,7 @@ def generateBranchObjects(config, name, secrets=None):
                 mozharnessRepoPath=config.get('mozharness_repo_path'),
                 mozharnessTag=config.get('mozharness_tag'),
                 geckoL10nRoot=config.get('gecko_l10n_root'),
+                geckoLanguagesFile=pf.get('gecko_languages_file'),
                 **nightly_kwargs
             )
 
