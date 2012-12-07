@@ -843,6 +843,7 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
         self.runAliveTests = runAliveTests
         self.gaiaRepo = gaiaRepo
         self.gaiaRevision = gaiaRevision
+        self.geckoL10nRoot = geckoL10nRoot
 
         assert len(self.tooltool_url_list) <= 1, "multiple urls not currently supported by tooltool"
 
