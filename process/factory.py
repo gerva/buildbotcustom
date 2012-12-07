@@ -753,7 +753,6 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                  compareLocalesRepoPath=None,
                  compareLocalesTag='RELEASE_AUTOMATION',
                  mozharnessRepoPath=None,
-                 # staging only
                  mozharnessTag='default',
                  multiLocaleScript=None,
                  multiLocaleConfig=None,
@@ -1914,8 +1913,6 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
         ))
 
     def addPostBuildCleanupSteps(self):
-        # staging only
-        return
         if self.nightly:
             self.addStep(ShellCommand(
              name='rm_builddir',
