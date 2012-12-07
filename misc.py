@@ -1175,8 +1175,8 @@ def generateBranchObjects(config, name, secrets=None):
             else:
                 if 'android' in platform:
                     multiargs['multiLocaleScript'] = 'scripts/multil10n.py'
-            if config.get('multi_config_name'):
-                multiargs['multiLocaleConfig'] = config['multi_config_name']
+            if pf.get('multi_config_name'):
+                multiargs['multiLocaleConfig'] = pf['multi_config_name']
             else:
                 multiargs['multiLocaleConfig'] = 'multi_locale/%s_%s.json' % (name, platform)
 
