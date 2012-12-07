@@ -954,7 +954,6 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
             assert mozharnessRepoPath and mozharnessTag
             self.mozharnessRepoPath = mozharnessRepoPath
             # staging only
-            self.mozharnessTag = 'gecko-multilocale'
             self.addMozharnessRepoSteps()
         if multiLocale:
             assert compareLocalesRepoPath and compareLocalesTag
