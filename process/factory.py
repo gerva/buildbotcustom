@@ -953,7 +953,7 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
         if mozharnessRepoPath:
             assert mozharnessRepoPath and mozharnessTag
             self.mozharnessRepoPath = mozharnessRepoPath
-            # staging only
+            self.mozharnessTag = mozharnessTag
             self.addMozharnessRepoSteps()
         if multiLocale:
             assert compareLocalesRepoPath and compareLocalesTag
