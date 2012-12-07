@@ -1773,11 +1773,12 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                 target=self.mock_target,
                 mock_workdir_prefix=None,
             ))
-            # We need to set packageFilename to the multi apk
-            self.addFilePropertiesSteps(filename=self.packageFilename,
-                                        directory='build/%s/dist' % self.mozillaObjdir,
-                                        fileType='package',
-                                        haltOnFailure=True)
+            # b2g doesn't get snippets, and these steps don't work it, so don't run them
+            if self.productName != 'b2g':
+                self.addFilePropertiesSteps(filename=self.packageFilename,
+                                            directory='build/%s/dist' % self.mozillaObjdir,
+                                            fileType='package',
+                                            haltOnFailure=True)
 
         if self.createSnippet and 'android' not in self.complete_platform:
             self.addCreateUpdateSteps();
