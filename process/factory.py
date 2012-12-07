@@ -754,7 +754,7 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                  compareLocalesTag='RELEASE_AUTOMATION',
                  mozharnessRepoPath=None,
                  # staging only
-                 mozharnessTag='gecko-multilocale',
+                 mozharnessTag='default',
                  multiLocaleScript=None,
                  multiLocaleConfig=None,
                  mozharnessMultiOptions=None,
