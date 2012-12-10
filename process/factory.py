@@ -1761,6 +1761,14 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                    '--config-file', self.multiLocaleConfig]
             if self.multiLocaleMerge:
                 cmd.append('--merge-locales')
+            if self.gaiaLanguagesFile:
+                cmd.extend(['--gaia-languages-file', WithProperties('%(basedir)s/build/gaia/' + self.gaiaLanguagesFile)])
+            if self.gaiaL10nRoot:
+                cmd.extend(['--gaia-l10n-root', self.gaiaL10nRoot])
+            if self.geckoLanguagesFile:
+                cmd.extend(['--gecko-languages-file', self.geckoLanguagesFile])
+            if self.geckoL10nRoot:
+                cmd.extend(['--gecko-l10n-root', self.geckoL10nRoot])
             cmd.extend(self.mozharnessMultiOptions)
             self.addStep(MockCommand(
                 name='mozharness_multilocale',
