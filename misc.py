@@ -1164,23 +1164,6 @@ def generateBranchObjects(config, name, secrets=None):
         if config.get('leak_target'):
             extra_args['leakTarget'] = config['leak_target']
 
-        multiargs = {}
-        if config.get('enable_multi_locale') and pf.get('multi_locale'):
-            multiargs['multiLocale'] = True
-            multiargs['multiLocaleMerge'] = config['multi_locale_merge']
-            multiargs['compareLocalesRepoPath'] = config['compare_locales_repo_path']
-            multiargs['compareLocalesTag'] = config['compare_locales_tag']
-            multiargs['mozharnessMultiOptions'] = pf.get('mozharness_multi_options')
-            if pf.get('product_name') == 'b2g':
-                multiargs['multiLocaleScript'] = 'scripts/b2g_multilocale.py'
-            else:
-                if 'android' in platform:
-                    multiargs['multiLocaleScript'] = 'scripts/multil10n.py'
-            if pf.get('multi_config_name'):
-                multiargs['multiLocaleConfig'] = pf['multi_config_name']
-            else:
-                multiargs['multiLocaleConfig'] = 'multi_locale/%s_%s.json' % (name, platform)
-
         # Some platforms shouldn't do dep builds (i.e. RPM)
         if pf.get('enable_dep', True):
             factory_kwargs = {
@@ -1246,7 +1229,7 @@ def generateBranchObjects(config, name, secrets=None):
                 'gaiaRepo': pf.get('gaia_repo'),
                 'gaiaRevision': config.get('gaia_revision'),
                 'gaiaLanguagesFile': pf.get('gaia_languages_file'),
-                'gaiaLanguagesScript': pf.get('gaia_languages_script', 'scripts/b2g_multilocale.py'),
+                'gaiaLanguagesScript': pf.get('gaia_languages_script', 'scripts/b2g_desktop_multilocale.py'),
                 'gaiaL10nRoot': config.get('gaia_l10n_root'),
                 'mozharnessRepoPath': config.get('mozharness_repo_path'),
                 'mozharnessTag': config.get('mozharness_tag'),
@@ -1254,7 +1237,6 @@ def generateBranchObjects(config, name, secrets=None):
                 'geckoLanguagesFile': pf.get('gecko_languages_file'),
             }
             factory_kwargs.update(extra_args)
-            factory_kwargs.update(multiargs)
 
             mozilla2_dep_factory = factory_class(**factory_kwargs)
             #eg. TB Linux comm-central build
@@ -1388,6 +1370,24 @@ def generateBranchObjects(config, name, secrets=None):
                     triggeredSchedulers=[l10nNightlyBuilders[nightly_builder]['l10n_builder']]
 
 
+            multiargs = {}
+            if config.get('enable_multi_locale') and pf.get('multi_locale'):
+                multiargs['multiLocale'] = True
+                multiargs['multiLocaleMerge'] = config['multi_locale_merge']
+                multiargs['compareLocalesRepoPath'] = config['compare_locales_repo_path']
+                multiargs['compareLocalesTag'] = config['compare_locales_tag']
+                multiargs['mozharnessMultiOptions'] = pf.get('mozharness_multi_options')
+                if pf.get('product_name') == 'b2g':
+                    multiargs['multiLocaleScript'] = 'scripts/b2g_desktop_multilocale.py'
+                else:
+                    if 'android' in platform:
+                        multiargs['multiLocaleScript'] = 'scripts/multil10n.py'
+                if pf.get('multi_config_name'):
+                    multiargs['multiLocaleConfig'] = pf['multi_config_name']
+                else:
+                    multiargs['multiLocaleConfig'] = 'multi_locale/%s_%s.json' % (name, platform)
+
+
             create_snippet = config['create_snippet']
             if pf.has_key('create_snippet') and config['create_snippet']:
                 create_snippet = pf.get('create_snippet')
@@ -1503,7 +1503,7 @@ def generateBranchObjects(config, name, secrets=None):
                 gaiaRepo=pf.get('gaia_repo'),
                 gaiaRevision=config.get('gaia_revision'),
                 gaiaLanguagesFile=pf.get('gaia_languages_file'),
-                gaiaLanguagesScript=pf.get('gaia_languages_script', 'scripts/b2g_multilocale.py'),
+                gaiaLanguagesScript=pf.get('gaia_languages_script', 'scripts/b2g_desktop_multilocale.py'),
                 gaiaL10nRoot=config.get('gaia_l10n_root'),
                 mozharnessRepoPath=config.get('mozharness_repo_path'),
                 mozharnessTag=config.get('mozharness_tag'),
