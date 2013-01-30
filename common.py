@@ -46,12 +46,6 @@ def incrementBuildID(buildID):
 
 
 def normalizeName(name, product=None):
-    # FIXME: hacky workaround to fix thunderbird windows builds
-    if name in ('release-comm-esr17-win32_build',
-                'release-comm-beta-win32_build',
-                'release-comm-release-win32_build'):
-        return 'zzz-%s' % name.split('-')[2]
-
     prefix = ''
     if product != None and 'thunderbird' in product:
         prefix = 'tb-'
