@@ -105,7 +105,14 @@ def normalizeName(name, product=None):
         # Regexes are slow, so make sure the word is there at all before
         # trying to do a substitution.
         if word in name:
-            name = re.sub(r'(-|_|\A)%s(-|_|\Z)' % word, r'\1%s\2' % replacement, name)
+            # Match strings that...
+            regex = re.compile(
+                r'(-|_|\A)' +   # Are the start of the string or after a separator
+                ('%s' % word) + # Contain the word we're looking
+                r'(-|_|\Z)'     # And don't have anything other the end of the string
+                                # or a separator atfer them
+            )
+            name = regex.sub(r'\1%s\2' % replacement, name)
     # Not sure why we do this, but apparently we replace all the underscores
     # with hyphens...
     name = name.replace('_', '-')
