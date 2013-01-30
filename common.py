@@ -45,7 +45,7 @@ def incrementBuildID(buildID):
     return genBuildID(epoch + 1)
 
 
-def reallyShort(name, product=None):
+def normalizeName(name, product=None):
     # FIXME: hacky workaround to fix thunderbird windows builds
     if name in ('release-comm-esr17-win32_build',
                 'release-comm-beta-win32_build',
