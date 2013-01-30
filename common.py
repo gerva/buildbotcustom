@@ -1,3 +1,4 @@
+import re
 import time
 import uuid
 
@@ -61,7 +62,7 @@ def normalizeName(name, product=None):
         'jaegermonkey': 'jm',
         'shadow': 'sh',
         'mobile': 'mb',
-        'desktop': None,
+        'desktop': '',
         'debug': 'dbg',
         'xulrunner': 'xr',
         'build': 'bld',
@@ -100,17 +101,12 @@ def normalizeName(name, product=None):
         'gecko': 'g',
         'localizer': 'lz',
     }
-    hyphen_seperated_words = name.split('-')
-    words = []
-    for word in hyphen_seperated_words:
-        space_seperated_words = word.split('_')
-        for word in space_seperated_words:
-            words.extend(word.split(' '))
-    new_words = []
-    for word in words:
-        if word in mappings.keys():
-            if mappings[word]:
-                new_words.append(mappings[word])
-        else:
-            new_words.append(word)
-    return prefix + '-'.join(new_words)
+    for word, replacement in mappings.iteritems():
+        # Regexes are slow, so make sure the word is there at all before
+        # trying to do a substitution.
+        if word in name:
+            name = re.sub(r'(-|_|\A)%s(-|_|\Z)' % word, r'\1%s\2' % replacement, name)
+    # Not sure why we do this, but apparently we replace all the underscores
+    # with hyphens...
+    name = name.replace('_', '-')
+    return prefix + name
