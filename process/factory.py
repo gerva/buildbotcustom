@@ -901,21 +901,8 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
 
             # e.g.:
             # /opt/aus2/incoming/2/Firefox/mozilla-central/WINNT_x86-msvc
-            # To preserve existing behavior, we need to set the
-            # ausFullUploadDir differently for when we are create all the
-            # mars (complete+partial) ourselves.
-            if self.createPartial:
-                # e.g.:
-                # /opt/aus2/incoming/2/Firefox/mozilla-central/WINNT_x86-msvc
-                self.ausFullUploadDir = '%s/%s' % (self.ausBaseUploadDir,
-                                                   self.updatePlatform)
-            else:
-                # this is a tad ugly because we need python interpolation
-                # as well as WithProperties, e.g.:
-                # /opt/aus2/build/0/Firefox/mozilla-central/WINNT_x86-msvc/2008010103/en-US
-                self.ausFullUploadDir = '%s/%s/%%(buildid)s/en-US' % \
-                    (self.ausBaseUploadDir,
-                     self.updatePlatform)
+            self.ausFullUploadDir = '%s/%s' % (self.ausBaseUploadDir,
+                                                self.updatePlatform)
 
         self.complete_platform = self.platform
         # we don't need the extra cruft in 'platform' anymore
@@ -2479,11 +2466,8 @@ class NightlyBuildFactory(MercurialBuildFactory):
         #
         # updates generated centrally: /opt/aus2/build/0/...
         # updates generated on slave:  /opt/aus2/incoming/2/...
-        if self.createPartial:
-            return "%s/%%(previous_buildid)s/en-US" % \
-                self.ausFullUploadDir
-        else:
-            return self.ausFullUploadDir
+        return "%s/%%(previous_buildid)s/en-US" % \
+            self.ausFullUploadDir
 
     def getCurrentBuildUploadDir(self):
         return "%s/%%(buildid)s/en-US" % self.ausFullUploadDir
