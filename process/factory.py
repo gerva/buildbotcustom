@@ -899,21 +899,10 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
             assert ausBaseUploadDir and updatePlatform and downloadBaseURL
             assert ausUser and ausSshKey and ausHost
 
-            # To preserve existing behavior, we need to set the
-            # ausFullUploadDir differently for when we are create all the
-            # mars (complete+partial) ourselves.
-            if self.createPartial:
-                # e.g.:
-                # /opt/aus2/incoming/2/Firefox/mozilla-central/WINNT_x86-msvc
-                self.ausFullUploadDir = '%s/%s' % (self.ausBaseUploadDir,
-                                                   self.updatePlatform)
-            else:
-                # this is a tad ugly because we need python interpolation
-                # as well as WithProperties, e.g.:
-                # /opt/aus2/build/0/Firefox/mozilla-central/WINNT_x86-msvc/2008010103/en-US
-                self.ausFullUploadDir = '%s/%s/%%(buildid)s/en-US' % \
-                    (self.ausBaseUploadDir,
-                     self.updatePlatform)
+            # e.g.:
+            # /opt/aus2/incoming/2/Firefox/mozilla-central/WINNT_x86-msvc
+            self.ausFullUploadDir = '%s/%s' % (self.ausBaseUploadDir,
+                                                self.updatePlatform)
 
         self.complete_platform = self.platform
         # we don't need the extra cruft in 'platform' anymore
@@ -2466,7 +2455,7 @@ class NightlyBuildFactory(MercurialBuildFactory):
                 workdir='%s/dist/update' % self.absMozillaObjDir,
             ))
 
-    def getPreviousBuildUploadDir(self):
+    def getPreviousBuildUploadDir(self, locale='en-US'):
         # Uploading the complete snippet occurs regardless of whether we are
         # generating partials on the slave or not, it just goes to a different
         # path for eventual consumption by the central update generation
@@ -2477,17 +2466,11 @@ class NightlyBuildFactory(MercurialBuildFactory):
         #
         # updates generated centrally: /opt/aus2/build/0/...
         # updates generated on slave:  /opt/aus2/incoming/2/...
-        if self.createPartial:
-            return "%s/%%(previous_buildid)s/en-US" % \
-                self.ausFullUploadDir
-        else:
-            return self.ausFullUploadDir
+        return "%s/%%(previous_buildid)s/en-US" % \
+            self.ausFullUploadDir
 
     def getCurrentBuildUploadDir(self):
-        if self.createPartial:
-            return "%s/%%(buildid)s/en-US" % self.ausFullUploadDir
-        else:
-            return self.ausFullUploadDir
+        return "%s/%%(buildid)s/en-US" % self.ausFullUploadDir
 
     def addUploadSnippetsSteps(self):
         ausPreviousBuildUploadDir = self.getPreviousBuildUploadDir()
@@ -2514,8 +2497,6 @@ class NightlyBuildFactory(MercurialBuildFactory):
             haltOnFailure=True,
         ))
 
-        # We only need to worry about empty snippets (and partials obviously)
-        # if we are creating partial patches on the slaves.
         if self.createPartial:
             self.addStep(RetryingShellCommand(
                 name='upload_partial_snippet',
@@ -2529,32 +2510,32 @@ class NightlyBuildFactory(MercurialBuildFactory):
                 description=['upload', 'partial', 'snippet'],
                 haltOnFailure=True,
             ))
-            ausCurrentBuildUploadDir = self.getCurrentBuildUploadDir()
-            self.addStep(RetryingShellCommand(
-                name='create_aus_current_updir',
-                doStepIf=self.previousMarExists,
-                command=['bash', '-c',
-                         WithProperties('ssh -l %s ' % self.ausUser +
-                                        '-i ~/.ssh/%s %s ' % (self.ausSshKey, self.ausHost) +
-                                        'mkdir -p %s' % ausCurrentBuildUploadDir)],
-                description=['create', 'aus', 'current', 'upload', 'dir'],
-                haltOnFailure=True,
-            ))
-            # Create remote empty complete/partial snippets for current build.
-            # Also touch the remote platform dir to defeat NFS caching on the
-            # AUS webheads.
-            self.addStep(RetryingShellCommand(
-                name='create_empty_snippets',
-                doStepIf=self.previousMarExists,
-                command=['bash', '-c',
-                         WithProperties('ssh -l %s ' % self.ausUser +
-                                        '-i ~/.ssh/%s %s ' % (self.ausSshKey, self.ausHost) +
-                                        'touch %s/complete.txt %s/partial.txt %s' % (ausCurrentBuildUploadDir,
-                                                                                     ausCurrentBuildUploadDir,
-                                                                                     self.ausFullUploadDir))],
-                description=['create', 'empty', 'snippets'],
-                haltOnFailure=True,
-            ))
+        ausCurrentBuildUploadDir = self.getCurrentBuildUploadDir()
+        self.addStep(RetryingShellCommand(
+            name='create_aus_current_updir',
+            doStepIf=self.previousMarExists,
+            command=['bash', '-c',
+                        WithProperties('ssh -l %s ' % self.ausUser +
+                                    '-i ~/.ssh/%s %s ' % (self.ausSshKey, self.ausHost) +
+                                    'mkdir -p %s' % ausCurrentBuildUploadDir)],
+            description=['create', 'aus', 'current', 'upload', 'dir'],
+            haltOnFailure=True,
+        ))
+        # Create remote empty complete/partial snippets for current build.
+        # Also touch the remote platform dir to defeat NFS caching on the
+        # AUS webheads.
+        self.addStep(RetryingShellCommand(
+            name='create_empty_snippets',
+            doStepIf=self.previousMarExists,
+            command=['bash', '-c',
+                        WithProperties('ssh -l %s ' % self.ausUser +
+                                    '-i ~/.ssh/%s %s ' % (self.ausSshKey, self.ausHost) +
+                                    'touch %s/complete.txt %s/partial.txt %s' % (ausCurrentBuildUploadDir,
+                                                                                    ausCurrentBuildUploadDir,
+                                                                                    self.ausFullUploadDir))],
+            description=['create', 'empty', 'snippets'],
+            haltOnFailure=True,
+        ))
 
     def doUpload(self, postUploadBuildDir=None, uploadMulti=False):
         # Because of how the RPM packaging works,
@@ -3573,7 +3554,6 @@ class NightlyRepackFactory(BaseRepackFactory, NightlyBuildFactory):
         self.ausSshKey = ausSshKey
         self.ausHost = ausHost
         self.createPartial = createPartial
-        self.geriatricMasters = []
         self.extraConfigureArgs = extraConfigureArgs
 
         # This is required because this __init__ doesn't call the
@@ -3636,17 +3616,10 @@ class NightlyRepackFactory(BaseRepackFactory, NightlyBuildFactory):
             # To preserve existing behavior, we need to set the
             # ausFullUploadDir differently for when we are create all the
             # mars (complete+partial) ourselves.
-            if self.createPartial:
-                # e.g.:
-                # /opt/aus2/incoming/2/Firefox/mozilla-central/WINNT_x86-msvc
-                self.ausFullUploadDir = '%s/%s' % (self.ausBaseUploadDir,
-                                                   self.updatePlatform)
-            else:
-                # this is a tad ugly because we need python interpolation
-                # as well as WithProperties, e.g.:
-                # /opt/aus2/build/0/Firefox/mozilla-central/WINNT_x86-msvc/2008010103/en-US
-                self.ausFullUploadDir = '%s/%s/%%(buildid)s/%%(locale)s' % \
-                    (self.ausBaseUploadDir, self.updatePlatform)
+            # e.g.:
+            # /opt/aus2/incoming/2/Firefox/mozilla-central/WINNT_x86-msvc
+            self.ausFullUploadDir = '%s/%s' % (self.ausBaseUploadDir,
+                                                self.updatePlatform)
             NightlyBuildFactory.addCreateSnippetsSteps(self,
                                                        milestone_extra='-l10n')
             NightlyBuildFactory.addUploadSnippetsSteps(self)
@@ -3656,17 +3629,11 @@ class NightlyRepackFactory(BaseRepackFactory, NightlyBuildFactory):
             self.addPeriodicRebootSteps()
 
     def getPreviousBuildUploadDir(self):
-        if self.createPartial:
-            return "%s/%%(previous_buildid)s/%%(locale)s" % \
-                self.ausFullUploadDir
-        else:
-            return self.ausFullUploadDir
+        return "%s/%%(previous_buildid)s/%%(locale)s" % \
+            self.ausFullUploadDir
 
     def getCurrentBuildUploadDir(self):
-        if self.createPartial:
-            return "%s/%%(buildid)s/%%(locale)s" % self.ausFullUploadDir
-        else:
-            return self.ausFullUploadDir
+        return "%s/%%(buildid)s/%%(locale)s" % self.ausFullUploadDir
 
     def updateSources(self):
         self.addStep(ShellCommand(
