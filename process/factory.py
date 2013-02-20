@@ -2456,16 +2456,6 @@ class NightlyBuildFactory(MercurialBuildFactory):
             ))
 
     def getPreviousBuildUploadDir(self):
-        # Uploading the complete snippet occurs regardless of whether we are
-        # generating partials on the slave or not, it just goes to a different
-        # path for eventual consumption by the central update generation
-        # server.
-
-        # ausFullUploadDir is expected to point to the correct base path on the
-        # AUS server for each case:
-        #
-        # updates generated centrally: /opt/aus2/build/0/...
-        # updates generated on slave:  /opt/aus2/incoming/2/...
         return "%s/%%(previous_buildid)s/en-US" % \
             self.ausFullUploadDir
 
@@ -3613,9 +3603,6 @@ class NightlyRepackFactory(BaseRepackFactory, NightlyBuildFactory):
             assert ausBaseUploadDir and updatePlatform and downloadBaseURL
             assert ausUser and ausSshKey and ausHost
 
-            # To preserve existing behavior, we need to set the
-            # ausFullUploadDir differently for when we are create all the
-            # mars (complete+partial) ourselves.
             # e.g.:
             # /opt/aus2/incoming/2/Firefox/mozilla-central/WINNT_x86-msvc
             self.ausFullUploadDir = '%s/%s' % (self.ausBaseUploadDir,
