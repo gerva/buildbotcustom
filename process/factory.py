@@ -1943,6 +1943,14 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                 command=cmd,
                 haltOnFailure=False,
             ))
+            self.addStep(SetProperty(
+                name='set_script_properties',
+                command=['bash', '-c', 'for file in `ls -1`; do cat $file; done'],
+                workdir='properties',
+                extract_fn=extractProperties,
+                warnOnFailure=False,
+                flunkOnFailure=False,
+            ))
         else:
             milestone = self.branchName + milestone_extra
             self.addStep(CreateCompleteUpdateSnippet(
