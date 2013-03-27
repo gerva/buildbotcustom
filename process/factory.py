@@ -1936,7 +1936,7 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                 '--aus-host', self.ausHost,
                 '--aus-user', self.ausUser,
                 '--aus-ssh-key', '~/.ssh/%s' % self.ausSshKey,
-                '--properties-dir', '%(basedir)s/properties',
+                '--properties-dir', WithProperties('%(basedir)s/properties'),
                 WithProperties(self.objdir + '/dist/%(packageFilename)s')
             ]
             self.addStep(ShellCommand(
