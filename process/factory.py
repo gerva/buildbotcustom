@@ -2108,8 +2108,8 @@ class TryBuildFactory(MercurialBuildFactory):
             # We normally rely on the Mercurial step to clobber for us, but
             # since we're managing the checkout ourselves...
             self.addStep(ShellCommand(
-                name='clobber_build',
-                command=['rm', '-rf', 'build'],
+                name='hg_purge',
+                command=['hg', '--config', 'extensions.purge=', 'purge'],
                 workdir='.',
                 timeout=60 * 60,
             ))
@@ -5387,7 +5387,7 @@ class RemoteUnittestFactory(MozillaTestFactory):
                          ],
                 haltOnFailure=True)
             )
-            if name.startswith('mochitest'):                
+            if name.startswith('mochitest'):
                 # XXX Hack for Bug 811444
                 # Slow down tests for panda boards
                 def ifAPanda(build):
@@ -5425,7 +5425,7 @@ class RemoteUnittestFactory(MozillaTestFactory):
                                      log_eval_func=lambda c, s: regex_log_evaluator(c, s,
                                                                                     global_errors + tegra_errors),
                                      ))
-                        
+
                 else:
                     totalChunks = suite.get('totalChunks', None)
                     thisChunk = suite.get('thisChunk', None)
