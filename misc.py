@@ -1295,8 +1295,7 @@ def generateBranchObjects(config, name, secrets=None):
                                   '--total-chunks', str(pf['l10n_chunks']),
                                   '--this-chunk', str(n),
                                   '--no-upload-repacks',
-                                  '--no-upload-nightly-snippets',
-                                  '--locale', 'de']
+                                  '--no-upload-nightly-snippets', ]
                     signing_servers = secrets.get(
                         pf.get('nightly_signing_servers'))
                     factory = SigningScriptFactory(
