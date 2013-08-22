@@ -777,6 +777,15 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
                 ])
                 if releaseConfig.get('enablePartialMarsAtBuildTime', True):
                     extra_args.append('--generate-partials')
+                if releaseConfig.get('l10nUsePymake') and platform in ('win32', 'win64'):
+                    extra_args.append('--use-pymake')
+                if pf.get('tooltool_manifest_src'):
+                    extra_args.extend(['--tooltool-manifest', pf.get('tooltool_manifest_src')])
+                if pf.get('tooltool_script'):
+                    extra_args.extend(['--tooltool-script',
+                                       pf['tooltool_script']])
+                for url in branchConfig['tooltool_url_list']:
+                    extra_args.extend(['--tooltool-url', url])
                 standalone_factory = SigningScriptFactory(
                     signingServers=getSigningServers(platform),
                     env=env,
@@ -841,8 +850,17 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
                         '--compare-locales-repo-path',
                         branchConfig['compare_locales_repo_path']
                     ])
+                    if releaseConfig.get('l10nUsePymake') and platform in ('win32', 'win64'):
+                        extra_args.append('--use-pymake')
                     if releaseConfig.get('enablePartialMarsAtBuildTime', True):
                         extra_args.append('--generate-partials')
+                    if pf.get('tooltool_manifest_src'):
+                        extra_args.extend(['--tooltool-manifest', pf.get('tooltool_manifest_src')])
+                    if pf.get('tooltool_script'):
+                        extra_args.extend(['--tooltool-script',
+                                           pf['tooltool_script']])
+                    for url in branchConfig['tooltool_url_list']:
+                        extra_args.extend(['--tooltool-url', url])
                     repack_factory = SigningScriptFactory(
                         signingServers=getSigningServers(platform),
                         env=env,

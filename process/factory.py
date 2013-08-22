@@ -1457,7 +1457,7 @@ class MercurialBuildFactory(MozillaBuildFactory, MockMixin):
                      warnOnWarnings=True,
                      workdir=WithProperties(
                          '%(basedir)s/build/' + self.objdir),
-                     timeout=5 * 60,  # 5 minutes.
+                     timeout=10 * 60,  # 10 minutes.
                      env=env,
                      target=self.mock_target,
                      mock=self.use_mock,
@@ -2769,6 +2769,7 @@ class ReleaseBuildFactory(MercurialBuildFactory):
             uploadEnv['UPLOAD_SSH_KEY'] = '~/.ssh/%s' % self.stageSshKey
 
         uploadArgs = dict(
+            upload_dir="%s-%s" % (self.branchName, self.platform),
             product=self.productName,
             version=self.version,
             buildNumber=str(self.buildNumber),
@@ -5774,7 +5775,7 @@ class TalosFactory(RequestSortingBuildFactory):
                          ))
         elif self.remoteTests:
             self.addStep(DownloadFile(
-                         url='http://build.mozilla.org/talos/zips/retry.zip',
+                         url='http://talos-bundles.pvt.build.mozilla.org/zips/retry.zip',
                          haltOnFailure=True,
                          ignore_certs=self.ignoreCerts,
                          name='download_retry_zip',
@@ -5822,7 +5823,7 @@ class TalosFactory(RequestSortingBuildFactory):
                              name='get_talos_zip',
                              command=[
                              'wget', '-O', 'talos.zip', '--no-check-certificate',
-                             'http://build.mozilla.org/talos/zips/talos.mobile.old.zip'],
+                             'http://talos-bundles.pvt.build.mozilla.org/zips/talos.mobile.old.zip'],
                              workdir=self.workdirBase,
                              haltOnFailure=True,
                              ))
@@ -5834,7 +5835,7 @@ class TalosFactory(RequestSortingBuildFactory):
                          ))
             if self.suites.find('tp4m') != -1:
                 self.addStep(DownloadFile(
-                             url='http://build.mozilla.org/talos/zips/mobile_tp4.zip',
+                             url='http://talos-bundles.pvt.build.mozilla.org/zips/mobile_tp4.zip',
                              workdir=self.workdirBase + "/talos",
                              haltOnFailure=True,
                              description="Download mobile_tp4.zip",
