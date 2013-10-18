@@ -389,7 +389,10 @@ def mergeBuildObjects(d1, d2):
     return retval
 
 
-def makeMHFactory(config, pf, **kwargs):
+def makeMHFactory(config, pf, extra_args=None, **kwargs):
+    if extra_args is None:
+        extra_args = pf['mozharness_config'].get('extra_args')
+
     factory_class = ScriptFactory
     if 'signingServers' in kwargs:
         if kwargs['signingServers'] is not None:
@@ -405,7 +408,7 @@ def makeMHFactory(config, pf, **kwargs):
     factory = factory_class(
         scriptRepo=scriptRepo,
         scriptName=pf['mozharness_config']['script_name'],
-        extra_args=pf['mozharness_config'].get('extra_args'),
+        extra_args=extra_args,
         reboot_command=pf['mozharness_config'].get('reboot_command'),
         script_timeout=pf.get('timeout', 3600),
         script_maxtime=pf.get('maxTime', 4 * 3600),
@@ -714,10 +717,13 @@ def generateBranchObjects(config, name, secrets=None):
     for platform in enabled_platforms:
         pf = config['platforms'][platform]
         base_name = pf['base_name']
+        pf_enable_l10n = bool(config['enable_l10n'] and
+                              platform in config.get('l10n_platforms', []))
 
         # short-circuit the extra logic below for debug, l10n, pgo and nightly
-        # builds these aren't required (yet) for mozharness builds
-        if 'mozharness_config' in pf:
+        # builds these aren't required (yet) for b2g mozharness builds
+        if 'mozharness_config' in pf and \
+           pf['mozharness_config'].get('enable_misc_py_short_circuit_hack'):
             if pf.get('enable_dep', True):
                 buildername = '%s_dep' % pf['base_name']
                 builders.append(buildername)
@@ -749,8 +755,7 @@ def generateBranchObjects(config, name, secrets=None):
             prettyNames[platform] = pretty_name
 
         # Fill the l10n dep dict
-        if config['enable_l10n'] and platform in config['l10n_platforms'] and \
-                config['enable_l10n_onchange']:
+        if pf_enable_l10n and config['enable_l10n_onchange']:
                 l10nBuilders[base_name] = {}
                 l10nBuilders[base_name]['tree'] = config['l10n_tree']
                 l10nBuilders[base_name]['l10n_builder'] = \
@@ -778,7 +783,7 @@ def generateBranchObjects(config, name, secrets=None):
             builder = '%s nightly' % base_name
             nightlyBuilders.append(builder)
             # Fill the l10nNightly dict
-            if config['enable_l10n'] and platform in config['l10n_platforms']:
+            if pf_enable_l10n and not pf.get('l10n_use_mozharness'):
                 l10nNightlyBuilders[builder] = {}
                 l10nNightlyBuilders[builder]['tree'] = config['l10n_tree']
                 l10nNightlyBuilders[builder]['l10n_builder'] = \
@@ -830,16 +835,14 @@ def generateBranchObjects(config, name, secrets=None):
         for b in l10nBuilders:
             if config['enable_l10n_onchange']:
                 l10n_builders.append(l10nBuilders[b]['l10n_builder'])
-            l10n_builders.append(
-                l10nNightlyBuilders['%s nightly' % b]['l10n_builder'])
+        for b in l10nNightlyBuilders:
+            l10n_builders.append(l10nNightlyBuilders[b]['l10n_builder'])
         l10n_binaryURL = config['enUS_binaryURL']
         if l10n_binaryURL.endswith('/'):
             l10n_binaryURL = l10n_binaryURL[:-1]
         l10n_binaryURL += "-l10n"
         nomergeBuilders.extend(l10n_builders)
 
-    tipsOnly = False
-    maxChanges = 100
     if config.get('enable_try', False):
         # Pay attention to all branches for pushes to try
         repo_branch = None
@@ -850,8 +853,8 @@ def generateBranchObjects(config, name, secrets=None):
     branchObjects['change_source'].append(HgPoller(
         hgURL=config['hgurl'],
         branch=config.get("poll_repo", config['repo_path']),
-        tipsOnly=tipsOnly,
-        maxChanges=maxChanges,
+        tipsOnly=False,
+        maxChanges=100,
         repo_branch=repo_branch,
         pollInterval=pollInterval,
     ))
@@ -1006,8 +1009,11 @@ def generateBranchObjects(config, name, secrets=None):
     for platform in enabled_platforms:
         # shorthand
         pf = config['platforms'][platform]
+        pf_enable_l10n = bool(config['enable_l10n'] and
+                              platform in config.get('l10n_platforms', []))
 
-        if 'mozharness_config' in pf:
+        if 'mozharness_config' in pf and \
+           pf['mozharness_config'].get('enable_misc_py_short_circuit_hack'):
             if 'mozharness_repo_url' in pf:
                 config['mozharness_repo_url'] = pf['mozharness_repo_url']
             factory = makeMHFactory(config, pf, signingServers=secrets.get(
@@ -1288,28 +1294,21 @@ def generateBranchObjects(config, name, secrets=None):
                 platform_env['MOZ_UPDATE_CHANNEL'] = config['update_channel']
 
             triggeredSchedulers = None
-            if config['enable_l10n'] and pf.get('is_mobile_l10n') and pf.get('l10n_chunks'):
-                mobile_l10n_scheduler_name = '%s-%s-l10n' % (name, platform)
-                mobile_l10n_builders = []
+            if pf_enable_l10n and pf.get('l10n_use_mozharness'):
+                l10n_scheduler_name = '%s-%s-l10n' % (name, platform)
+                l10n_builders = []
                 builder_env = platform_env.copy()
-                for n in range(1, int(pf['l10n_chunks']) + 1):
+                l10n_chunks = pf['mozharness_config']['l10n_chunks']
+                for n in range(1, l10n_chunks + 1):
                     builddir = '%s-%s-l10n_%s' % (name, platform, str(n))
                     builderName = "%s l10n nightly %s/%s" % \
-                        (pf['base_name'], n, pf['l10n_chunks'])
-                    mobile_l10n_builders.append(builderName)
-                    extra_args = ['--cfg',
-                                  'single_locale/%s_%s.py' % (name, platform),
-                                  '--total-chunks', str(pf['l10n_chunks']),
+                        (pf['base_name'], n, l10n_chunks)
+                    l10n_builders.append(builderName)
+                    extra_args = ['--config', 'single_locale/%s_%s.py' % (name, platform),
+                                  '--total-chunks', str(l10n_chunks),
                                   '--this-chunk', str(n)]
-                    signing_servers = secrets.get(
-                        pf.get('nightly_signing_servers'))
-                    factory = SigningScriptFactory(
-                        signingServers=signing_servers,
-                        scriptRepo='%s%s' % (config['hgurl'],
-                                             config['mozharness_repo_path']),
-                        scriptName='scripts/mobile_l10n.py',
-                        extra_args=extra_args
-                    )
+                    factory = makeMHFactory(config, pf, extra_args=extra_args,
+                                            signingServers=secrets.get(pf.get('nightly_signing_servers')))
                     slavebuilddir = normalizeName(builddir, pf['stage_product'])
                     branchObjects['builders'].append({
                         'name': builderName,
@@ -1331,14 +1330,13 @@ def generateBranchObjects(config, name, secrets=None):
                     })
 
                 branchObjects["schedulers"].append(Triggerable(
-                    name=mobile_l10n_scheduler_name,
-                    builderNames=mobile_l10n_builders
+                    name=l10n_scheduler_name,
+                    builderNames=l10n_builders
                 ))
-                triggeredSchedulers = [mobile_l10n_scheduler_name]
+                triggeredSchedulers = [l10n_scheduler_name]
 
             else:  # Non-mobile l10n is done differently at this time
-                if config['enable_l10n'] and platform in config['l10n_platforms'] and \
-                        nightly_builder in l10nNightlyBuilders:
+                if pf_enable_l10n and nightly_builder in l10nNightlyBuilders:
                     triggeredSchedulers = [
                         l10nNightlyBuilders[nightly_builder]['l10n_builder']]
 
@@ -1483,91 +1481,90 @@ def generateBranchObjects(config, name, secrets=None):
             }
             branchObjects['builders'].append(mozilla2_nightly_builder)
 
-            if config['enable_l10n']:
-                if platform in config['l10n_platforms']:
-                    mozconfig = os.path.join(os.path.dirname(
-                        pf['src_mozconfig']), 'l10n-mozconfig')
-                    l10n_kwargs = {}
-                    if config.get('call_client_py', False):
-                        l10n_kwargs['callClientPy'] = True
-                        l10n_kwargs['clientPyConfig'] = {
-                            'chatzilla_repo_path': config.get('chatzilla_repo_path', ''),
-                            'cvsroot': config.get('cvsroot', ''),
-                            'inspector_repo_path': config.get('inspector_repo_path', ''),
-                            'moz_repo_path': config.get('moz_repo_path', ''),
-                            'skip_blank_repos': config.get('skip_blank_repos', False),
-                            'venkman_repo_path': config.get('venkman_repo_path', ''),
-                        }
-
-                    mozilla2_l10n_nightly_factory = NightlyRepackFactory(
-                        env=platform_env,
-                        objdir=l10n_objdir,
-                        platform=platform,
-                        hgHost=config['hghost'],
-                        tree=config['l10n_tree'],
-                        project=pf['product_name'],
-                        appName=pf['app_name'],
-                        enUSBinaryURL=config['enUS_binaryURL'],
-                        nightly=True,
-                        mozconfig=mozconfig,
-                        l10nNightlyUpdate=config['l10nNightlyUpdate'],
-                        l10nDatedDirs=config['l10nDatedDirs'],
-                        createPartial=pf.get(
-                            'create_partial_l10n', config['create_partial_l10n']),
-                        ausBaseUploadDir=config['aus2_base_upload_dir_l10n'],
-                        updatePlatform=pf['update_platform'],
-                        downloadBaseURL=config['download_base_url'],
-                        ausUser=config['aus2_user'],
-                        ausSshKey=config['aus2_ssh_key'],
-                        ausHost=config['aus2_host'],
-                        balrog_api_root=config.get('balrog_api_root', None),
-                        balrog_credentials_file=config[
-                            'balrog_credentials_file'],
-                        hashType=config['hash_type'],
-                        stageServer=config['stage_server'],
-                        stageUsername=config['stage_username'],
-                        stageSshKey=config['stage_ssh_key'],
-                        repoPath=config['repo_path'],
-                        l10nRepoPath=config['l10n_repo_path'],
-                        buildToolsRepoPath=config['build_tools_repo_path'],
-                        compareLocalesRepoPath=config[
-                            'compare_locales_repo_path'],
-                        compareLocalesTag=config['compare_locales_tag'],
-                        buildSpace=l10nSpace,
-                        clobberURL=config['base_clobber_url'],
-                        clobberTime=clobberTime,
-                        mozillaDir=config.get('mozilla_dir', None),
-                        signingServers=secrets.get(
-                            pf.get('nightly_signing_servers')),
-                        baseMirrorUrls=config.get('base_mirror_urls'),
-                        extraConfigureArgs=config.get(
-                            'l10n_extra_configure_args', []),
-                        buildsBeforeReboot=pf.get('builds_before_reboot', 0),
-                        use_mock=pf.get('use_mock'),
-                        mock_target=pf.get('mock_target'),
-                        mock_packages=pf.get('mock_packages'),
-                        mock_copyin_files=pf.get('mock_copyin_files'),
-                        enable_pymake=enable_pymake,
-                        **l10n_kwargs
-                    )
-                    # eg. Thunderbird comm-aurora linux l10n nightly
-                    slavebuilddir = normalizeName('%s-%s-l10n-nightly' % (name, platform), pf['stage_product'], max_=50)
-                    mozilla2_l10n_nightly_builder = {
-                        'name': l10nNightlyBuilders[nightly_builder]['l10n_builder'],
-                        'slavenames': pf.get('l10n_slaves', pf['slaves']),
-                        'builddir': '%s-%s-l10n-nightly' % (name, platform),
-                        'slavebuilddir': slavebuilddir,
-                        'factory': mozilla2_l10n_nightly_factory,
-                        'category': name,
-                        'nextSlave': _nextSlowSlave,
-                        'properties': {'branch': name,
-                                       'platform': platform,
-                                       'product': pf['stage_product'],
-                                       'stage_platform': stage_platform,
-                                       'slavebuilddir': slavebuilddir},
+            if pf_enable_l10n and not pf.get('l10n_use_mozharness'):
+                mozconfig = os.path.join(os.path.dirname(
+                    pf['src_mozconfig']), 'l10n-mozconfig')
+                l10n_kwargs = {}
+                if config.get('call_client_py', False):
+                    l10n_kwargs['callClientPy'] = True
+                    l10n_kwargs['clientPyConfig'] = {
+                        'chatzilla_repo_path': config.get('chatzilla_repo_path', ''),
+                        'cvsroot': config.get('cvsroot', ''),
+                        'inspector_repo_path': config.get('inspector_repo_path', ''),
+                        'moz_repo_path': config.get('moz_repo_path', ''),
+                        'skip_blank_repos': config.get('skip_blank_repos', False),
+                        'venkman_repo_path': config.get('venkman_repo_path', ''),
                     }
-                    branchObjects['builders'].append(
-                        mozilla2_l10n_nightly_builder)
+
+                mozilla2_l10n_nightly_factory = NightlyRepackFactory(
+                    env=platform_env,
+                    objdir=l10n_objdir,
+                    platform=platform,
+                    hgHost=config['hghost'],
+                    tree=config['l10n_tree'],
+                    project=pf['product_name'],
+                    appName=pf['app_name'],
+                    enUSBinaryURL=config['enUS_binaryURL'],
+                    nightly=True,
+                    mozconfig=mozconfig,
+                    l10nNightlyUpdate=config['l10nNightlyUpdate'],
+                    l10nDatedDirs=config['l10nDatedDirs'],
+                    createPartial=pf.get(
+                        'create_partial_l10n', config['create_partial_l10n']),
+                    ausBaseUploadDir=config['aus2_base_upload_dir_l10n'],
+                    updatePlatform=pf['update_platform'],
+                    downloadBaseURL=config['download_base_url'],
+                    ausUser=config['aus2_user'],
+                    ausSshKey=config['aus2_ssh_key'],
+                    ausHost=config['aus2_host'],
+                    balrog_api_root=config.get('balrog_api_root', None),
+                    balrog_credentials_file=config[
+                        'balrog_credentials_file'],
+                    hashType=config['hash_type'],
+                    stageServer=config['stage_server'],
+                    stageUsername=config['stage_username'],
+                    stageSshKey=config['stage_ssh_key'],
+                    repoPath=config['repo_path'],
+                    l10nRepoPath=config['l10n_repo_path'],
+                    buildToolsRepoPath=config['build_tools_repo_path'],
+                    compareLocalesRepoPath=config[
+                        'compare_locales_repo_path'],
+                    compareLocalesTag=config['compare_locales_tag'],
+                    buildSpace=l10nSpace,
+                    clobberURL=config['base_clobber_url'],
+                    clobberTime=clobberTime,
+                    mozillaDir=config.get('mozilla_dir', None),
+                    signingServers=secrets.get(
+                        pf.get('nightly_signing_servers')),
+                    baseMirrorUrls=config.get('base_mirror_urls'),
+                    extraConfigureArgs=config.get(
+                        'l10n_extra_configure_args', []),
+                    buildsBeforeReboot=pf.get('builds_before_reboot', 0),
+                    use_mock=pf.get('use_mock'),
+                    mock_target=pf.get('mock_target'),
+                    mock_packages=pf.get('mock_packages'),
+                    mock_copyin_files=pf.get('mock_copyin_files'),
+                    enable_pymake=enable_pymake,
+                    **l10n_kwargs
+                )
+                # eg. Thunderbird comm-aurora linux l10n nightly
+                slavebuilddir = normalizeName('%s-%s-l10n-nightly' % (name, platform), pf['stage_product'], max_=50)
+                mozilla2_l10n_nightly_builder = {
+                    'name': l10nNightlyBuilders[nightly_builder]['l10n_builder'],
+                    'slavenames': pf.get('l10n_slaves', pf['slaves']),
+                    'builddir': '%s-%s-l10n-nightly' % (name, platform),
+                    'slavebuilddir': slavebuilddir,
+                    'factory': mozilla2_l10n_nightly_factory,
+                    'category': name,
+                    'nextSlave': _nextSlowSlave,
+                    'properties': {'branch': name,
+                                'platform': platform,
+                                'product': pf['stage_product'],
+                                'stage_platform': stage_platform,
+                                'slavebuilddir': slavebuilddir},
+                }
+                branchObjects['builders'].append(
+                    mozilla2_l10n_nightly_builder)
 
             if config['enable_valgrind'] and \
                     platform in config['valgrind_platforms']:
@@ -1601,8 +1598,9 @@ def generateBranchObjects(config, name, secrets=None):
                 branchObjects['builders'].append(mozilla2_valgrind_builder)
 
         # We still want l10n_dep builds if nightlies are off
-        if config['enable_l10n'] and platform in config['l10n_platforms'] and \
-                config['enable_l10n_onchange']:
+        if config['enable_l10n'] and \
+           platform in config.get('l10n_platforms', []) and \
+           config['enable_l10n_onchange']:
             dep_kwargs = {}
             if config.get('call_client_py', False):
                 dep_kwargs['callClientPy'] = True
@@ -1616,41 +1614,50 @@ def generateBranchObjects(config, name, secrets=None):
                 }
             mozconfig = os.path.join(
                 os.path.dirname(pf['src_mozconfig']), 'l10n-mozconfig')
-            mozilla2_l10n_dep_factory = NightlyRepackFactory(
-                env=platform_env,
-                objdir=l10n_objdir,
-                platform=platform,
-                hgHost=config['hghost'],
-                tree=config['l10n_tree'],
-                project=pf['product_name'],
-                appName=pf['app_name'],
-                enUSBinaryURL=config['enUS_binaryURL'],
-                mozillaDir=config.get('mozilla_dir', None),
-                nightly=False,
-                l10nDatedDirs=config['l10nDatedDirs'],
-                stageServer=config['stage_server'],
-                stageUsername=config['stage_username'],
-                stageSshKey=config['stage_ssh_key'],
-                repoPath=config['repo_path'],
-                l10nRepoPath=config['l10n_repo_path'],
-                buildToolsRepoPath=config['build_tools_repo_path'],
-                compareLocalesRepoPath=config['compare_locales_repo_path'],
-                compareLocalesTag=config['compare_locales_tag'],
-                buildSpace=l10nSpace,
-                clobberURL=config['base_clobber_url'],
-                clobberTime=clobberTime,
-                signingServers=secrets.get(pf.get('dep_signing_servers')),
-                baseMirrorUrls=config.get('base_mirror_urls'),
-                extraConfigureArgs=config.get('l10n_extra_configure_args', []),
-                buildsBeforeReboot=pf.get('builds_before_reboot', 0),
-                use_mock=pf.get('use_mock'),
-                mock_target=pf.get('mock_target'),
-                mock_packages=pf.get('mock_packages'),
-                mock_copyin_files=pf.get('mock_copyin_files'),
-                mozconfig=mozconfig,
-                enable_pymake=enable_pymake,
-                **dep_kwargs
-            )
+            if pf.get('l10n_use_mozharness'):
+                # TODO: pass dep_kwargs for TB or use a different config
+                # TODO: use a different config?
+                extra_args = ['--cfg',
+                              'single_locale/%s_%s.py' % (name, platform)]
+                mozilla2_l10n_dep_factory = makeMHFactory(
+                    config, pf, extra_args=extra_args,
+                    signingServers=secrets.get(pf.get('dep_signing_servers')))
+            else:
+                mozilla2_l10n_dep_factory = NightlyRepackFactory(
+                    env=platform_env,
+                    objdir=l10n_objdir,
+                    platform=platform,
+                    hgHost=config['hghost'],
+                    tree=config['l10n_tree'],
+                    project=pf['product_name'],
+                    appName=pf['app_name'],
+                    enUSBinaryURL=config['enUS_binaryURL'],
+                    mozillaDir=config.get('mozilla_dir', None),
+                    nightly=False,
+                    l10nDatedDirs=config['l10nDatedDirs'],
+                    stageServer=config['stage_server'],
+                    stageUsername=config['stage_username'],
+                    stageSshKey=config['stage_ssh_key'],
+                    repoPath=config['repo_path'],
+                    l10nRepoPath=config['l10n_repo_path'],
+                    buildToolsRepoPath=config['build_tools_repo_path'],
+                    compareLocalesRepoPath=config['compare_locales_repo_path'],
+                    compareLocalesTag=config['compare_locales_tag'],
+                    buildSpace=l10nSpace,
+                    clobberURL=config['base_clobber_url'],
+                    clobberTime=clobberTime,
+                    signingServers=secrets.get(pf.get('dep_signing_servers')),
+                    baseMirrorUrls=config.get('base_mirror_urls'),
+                    extraConfigureArgs=config.get('l10n_extra_configure_args', []),
+                    buildsBeforeReboot=pf.get('builds_before_reboot', 0),
+                    use_mock=pf.get('use_mock'),
+                    mock_target=pf.get('mock_target'),
+                    mock_packages=pf.get('mock_packages'),
+                    mock_copyin_files=pf.get('mock_copyin_files'),
+                    mozconfig=mozconfig,
+                    enable_pymake=enable_pymake,
+                    **dep_kwargs
+                )
             # eg. Thunderbird comm-central linux l10n dep
             slavebuilddir = normalizeName('%s-%s-l10n-dep' % (name, platform), pf['stage_product'], max_=50)
             mozilla2_l10n_dep_builder = {
