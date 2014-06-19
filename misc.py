@@ -1552,6 +1552,11 @@ def generateBranchObjects(config, name, secrets=None):
             if 'mozharness_repo_url' in pf:
                 config['mozharness_repo_url'] = pf['mozharness_repo_url']
 
+            # desktop repacks using mozharness
+            if config.get('desktop_mozharness_l10n_repacks_enabled'):
+                if platform in config.get('mozharness_desktop_l10n_platforms'):
+                    print "Hi, I'm here: {0}".format(platform)
+
             # First, let's see if this is a desktop mozharness build
             # if it is, and the branch has it enabled, create the builders it
             # supports.
