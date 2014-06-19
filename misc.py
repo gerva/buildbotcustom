@@ -1552,17 +1552,18 @@ def generateBranchObjects(config, name, secrets=None):
             'done_nonunified_build': False,  # generic pf + nonunified
         }
 
+
+        # desktop repacks using mozharness
+        l10n_stuff = config.get('mozharness_desktop_l10n_platforms')
+        print "l10n_stuff: {0}".format(l10n_stuff)
+        if config.get('desktop_mozharness_l10n_repacks_enabled'):
+            print "platform: {0}".format(platform)
+            if platform in config.get('mozharness_desktop_l10n_platforms'):
+                print "Hi, I'm here: {0}".format(platform)
+
         if 'mozharness_config' in pf:
             if 'mozharness_repo_url' in pf:
                 config['mozharness_repo_url'] = pf['mozharness_repo_url']
-
-            # desktop repacks using mozharness
-            l10n_stuff = config.get('mozharness_desktop_l10n_platforms')
-            print "l10n_stuff: {0}".format(l10n_stuff)
-            if config.get('desktop_mozharness_l10n_repacks_enabled'):
-                print "platform: {0}".format(platform)
-                if platform in config.get('mozharness_desktop_l10n_platforms'):
-                    print "Hi, I'm here: {0}".format(platform)
 
             # First, let's see if this is a desktop mozharness build
             # if it is, and the branch has it enabled, create the builders it
