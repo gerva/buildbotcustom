@@ -1959,9 +1959,9 @@ def generateBranchObjects(config, name, secrets=None):
             if config['enable_l10n']:
                 if pf.get('is_mobile_l10n') and pf.get('l10n_chunks'):
                     l10n_use_mozharness = True
-                if pf.get('desktop_mozharness_l10n_repacks_enabled'):
-                    l10n_use_mozharness = True
-                    print 'use mozharness for l10n desktop repacks on {0}'.format(platform)
+            if pf.get('desktop_mozharness_l10n_repacks_enabled'):
+                l10n_use_mozharness = True
+                print 'use mozharness for l10n desktop repacks on {0}'.format(platform)
             if l10n_use_mozharness:
                 mobile_l10n_scheduler_name = '%s-%s-l10n' % (name, platform)
                 mobile_l10n_builders = []
