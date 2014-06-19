@@ -1524,6 +1524,10 @@ def generateBranchObjects(config, name, secrets=None):
     # We iterate throught the platforms a second time, so we need
     # to ensure that disabled platforms aren't configured the second time
     enabled_platforms = []
+
+    print "===="
+    print config['platforms'].keys()
+    print "===="
     for platform in sorted(config['platforms'].keys()):
         pf = config['platforms'][platform]
         if pf['stage_product'] in config['enabled_products']:
