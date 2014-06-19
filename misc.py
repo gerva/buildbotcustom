@@ -1525,9 +1525,6 @@ def generateBranchObjects(config, name, secrets=None):
     # to ensure that disabled platforms aren't configured the second time
     enabled_platforms = []
 
-    print "===="
-    print config['platforms'].keys()
-    print "===="
     for platform in sorted(config['platforms'].keys()):
         pf = config['platforms'][platform]
         if pf['stage_product'] in config['enabled_products']:
@@ -1552,10 +1549,7 @@ def generateBranchObjects(config, name, secrets=None):
             'done_nonunified_build': False,  # generic pf + nonunified
         }
 
-
         # desktop repacks using mozharness
-        l10n_stuff = config.get('mozharness_desktop_l10n_platforms')
-        print "l10n_stuff: {0}".format(l10n_stuff)
         if config.get('desktop_mozharness_l10n_repacks_enabled'):
             print "platform: {0}".format(platform)
             if platform in config.get('mozharness_desktop_l10n_platforms'):
