@@ -1553,7 +1553,10 @@ def generateBranchObjects(config, name, secrets=None):
                 config['mozharness_repo_url'] = pf['mozharness_repo_url']
 
             # desktop repacks using mozharness
+            l10n_stuff = config.get('mozharness_desktop_l10n_platforms'):
+            print "l10n_stuff: {0}".format(l10n_stuff)
             if config.get('desktop_mozharness_l10n_repacks_enabled'):
+                print "platform: {0}".format(platform)
                 if platform in config.get('mozharness_desktop_l10n_platforms'):
                     print "Hi, I'm here: {0}".format(platform)
 
