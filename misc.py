@@ -1983,6 +1983,8 @@ def generateBranchObjects(config, name, secrets=None):
                     extra_args = ['--config', scriptName,
                                   '--total-chunks', str(l10n_chunks),
                                   '--this-chunk', str(n)]
+                    print config
+                    print pf
                     factory = makeMHFactory(config, pf, extra_args=extra_args,
                         signingServers=secrets.get(pf.get('nightly_signing_servers')))
                     slavebuilddir = normalizeName(builddir, pf['stage_product'])
