@@ -1958,7 +1958,7 @@ def generateBranchObjects(config, name, secrets=None):
             l10n_use_mozharness = False
             if config['enable_l10n']:
                 if pf.get('is_mobile_l10n') and pf.get('l10n_chunks'):
-                    l10n_use_mozharness = Trueyy
+                    l10n_use_mozharness = True
                 if pf.get('desktop_mozharness_l10n_repacks_enabled'):
                     l10n_use_mozharness = True
             if l10n_use_mozharness:
