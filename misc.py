@@ -1549,11 +1549,6 @@ def generateBranchObjects(config, name, secrets=None):
             'done_nonunified_build': False,  # generic pf + nonunified
         }
 
-        # desktop repacks using mozharness
-        if config.get('desktop_mozharness_l10n_repacks_enabled'):
-            if platform in config.get('mozharness_desktop_l10n_platforms'):
-                print "Hi, I'm here: {0}".format(platform)
-
         if 'mozharness_config' in pf:
             if 'mozharness_repo_url' in pf:
                 config['mozharness_repo_url'] = pf['mozharness_repo_url']
@@ -1960,16 +1955,26 @@ def generateBranchObjects(config, name, secrets=None):
                 platform_env['MOZ_UPDATE_CHANNEL'] = config['update_channel']
 
             triggeredSchedulers = None
-            if config['enable_l10n'] and pf.get('is_mobile_l10n') and pf.get('l10n_chunks'):
+            l10n_use_mozharness = False
+            if config['enable_l10n']:
+                if pf.get('is_mobile_l10n') and pf.get('l10n_chunks'):
+                    l10n_use_mozharness = Trueyy
+                if pf.get('desktop_mozharness_l10n_repacks_enabled'):
+                    l10n_use_mozharness = True
+            if l10n_use_mozharness:
                 mobile_l10n_scheduler_name = '%s-%s-l10n' % (name, platform)
                 mobile_l10n_builders = []
                 builder_env = platform_env.copy()
+                mozharness_conf = 'single_locale/%s_%s.py' % (name, platform),
+                scriptName='scripts/mobile_l10n.py',
+                if pf.get('desktop_mozharness_builds_enabled'):
+                    mozharness_conf = 'single_locale/%s.py' % (platform),
+                    scriptName='scripts/desktop_l10n.py',
                 for n in range(1, int(pf['l10n_chunks']) + 1):
                     builddir = '%s-%s-l10n_%s' % (name, platform, str(n))
                     builderName = "%s l10n nightly-%s" % (pf['base_name'], n)
                     mobile_l10n_builders.append(builderName)
-                    extra_args = ['--cfg',
-                                  'single_locale/%s_%s.py' % (name, platform),
+                    extra_args = ['--cfg', mozharness_conf,
                                   '--total-chunks', str(pf['l10n_chunks']),
                                   '--this-chunk', str(n)]
                     signing_servers = secrets.get(
@@ -1978,7 +1983,7 @@ def generateBranchObjects(config, name, secrets=None):
                         signingServers=signing_servers,
                         scriptRepo='%s%s' % (config['hgurl'],
                                              config['mozharness_repo_path']),
-                        scriptName='scripts/mobile_l10n.py',
+                        scriptName=scriptName,
                         extra_args=extra_args
                     )
                     slavebuilddir = normalizeName(builddir, pf['stage_product'])
