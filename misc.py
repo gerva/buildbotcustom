@@ -1967,6 +1967,7 @@ def generateBranchObjects(config, name, secrets=None):
                 l10n_scheduler_name = '%s-%s-l10n' % (name, platform)
                 l10n_builders = []
                 builder_env = platform_env.copy()
+                l10n_chunks = pf.get('l10n_chunks')
                 mozharness_conf = 'single_locale/%s_%s.py' % (name, platform),
                 scriptName='scripts/mobile_l10n.py',
                 if not pf.get('is_mobile'):
@@ -1975,7 +1976,7 @@ def generateBranchObjects(config, name, secrets=None):
                 if pf.get('desktop_mozharness_builds_enabled'):
                     mozharness_conf = 'single_locale/%s.py' % (platform),
                     scriptName='scripts/desktop_l10n.py',
-                for n in range(1, int(pf['l10n_chunks']) + 1):
+                for n in range(1, int(l10n_chunks) + 1):
                     builddir = '%s-%s-l10n_%s' % (name, platform, str(n))
                     builderName = "%s l10n nightly-%s" % (pf['base_name'], n)
                     l10n_builders.append(builderName)
