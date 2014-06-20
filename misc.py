@@ -1986,6 +1986,7 @@ def generateBranchObjects(config, name, secrets=None):
                     print "PF: "
                     print pf
                     print "===="
+                    print pf['base_name']
                     factory = makeMHFactory(config, pf, extra_args=extra_args,
                         signingServers=secrets.get(pf.get('nightly_signing_servers')))
                     slavebuilddir = normalizeName(builddir, pf['stage_product'])
