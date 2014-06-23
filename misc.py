@@ -1525,6 +1525,7 @@ def generateBranchObjects(config, name, secrets=None):
     # to ensure that disabled platforms aren't configured the second time
     enabled_platforms = []
 
+    pf_enable = False
     for platform in sorted(config['platforms'].keys()):
         pf = config['platforms'][platform]
         if pf['stage_product'] in config['enabled_products']:
