@@ -1535,7 +1535,7 @@ def generateBranchObjects(config, name, secrets=None):
 
 
         if pf.get('desktop_mozharness_repacks_enabled'):
-            print "l10n enabled: {0}".format(platform)
+            print "l10n enabled: {0}, {1}".format(platform, name)
 
 
         # TODO still need to impl mozharness desktop: try, valgrind, xulrunnner,
