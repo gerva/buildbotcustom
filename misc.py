@@ -1532,10 +1532,58 @@ def generateBranchObjects(config, name, secrets=None):
     for platform in enabled_platforms:
         # shorthand
         pf = config['platforms'][platform]
-
+        stage_platform = pf.get('stage_platform', platform)
 
         if pf.get('desktop_mozharness_repacks_enabled'):
             print "l10n enabled: {0}, {1}".format(platform, name)
+
+            l10n_scheduler_name = '%s-%s-l10n' % (name, platform)
+            l10n_builders = []
+            platform_env = pf['env'].copy()
+            builder_env = platform_env.copy()
+            l10n_chunks = pf['mozharness_config']['l10n_chunks']
+            for n in range(1, l10n_chunks + 1):
+                builddir = '%s-%s-l10n_%s' % (name, platform, str(n))
+                builderName = "%s l10n nightly %s/%s" % \
+                    (pf['base_name'], n, l10n_chunks)
+                l10n_builders.append(builderName)
+                extra_args = ['--config', 'single_locale/%s.py' % (platform),
+                              '--total-chunks', str(l10n_chunks),
+                              '--this-chunk', str(n)]
+                signing_servers = secrets.get(pf.get('nightly_signing_servers'))
+                factory = SigningScriptFactory(
+                    signingServers=signing_servers,
+                    scriptRepo='%s%s' % (config['hgurl'],
+                                         config['mozharness_repo_path']),
+                    scriptName='scripts/desktop_l10n.py',
+                    extra_args=extra_args
+                )
+                slavebuilddir = normalizeName(builddir, pf['stage_product'])
+                branchObjects['builders'].append({
+                    'name': builderName,
+                    'slavenames': pf.get('slaves'),
+                    'builddir': builddir,
+                    'slavebuilddir': slavebuilddir,
+                    'factory': factory,
+                    'category': name,
+                    'nextSlave': _nextAWSSlave_wait_sort,
+                    'properties': {'branch': name,
+                                   'builddir': '%s-l10n_%s' % (builddir, str(n)),
+                                   'stage_platform': stage_platform,
+                                   'product': pf['stage_product'],
+                                   'platform': platform,
+                                   'slavebuilddir': slavebuilddir,
+                                   'script_repo_revision': config['mozharness_tag'],
+                                  },
+                    'env': builder_env
+                })
+
+                branchObjects["schedulers"].append(Triggerable(
+                    name=l10n_scheduler_name,
+                    builderNames=l10n_builders
+                ))
+                triggeredSchedulers = [l10n_scheduler_name]
+
 
 
         # TODO still need to impl mozharness desktop: try, valgrind, xulrunnner,
