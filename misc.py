@@ -1558,9 +1558,9 @@ def generateBranchObjects(config, name, secrets=None):
             # if it is not a desktop mozharness build, follow the mozharness
             # builder logic we had before
 
-            if platform in config.get('mozharness_desktop_l10n_platforms'):
-                if config.get('desktop_mozharness_repack_enabled'):
-                    print "l10n enabled: {0}".format(platform)
+#            if platform in config.get('mozharness_desktop_l10n_platforms'):
+#                if config.get('desktop_mozharness_repack_enabled'):
+#                    print "l10n enabled: {0}".format(platform)
 
 
             # we use this condition to enable/disable on a per platform basis
