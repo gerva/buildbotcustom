@@ -1537,7 +1537,7 @@ def generateBranchObjects(config, name, secrets=None):
         if pf.get('desktop_mozharness_repacks_enabled'):
             print "l10n enabled: {0}, {1}".format(platform, name)
 
-            l10n_scheduler_name = '%s-%s-l10n' % (name, platform)
+            l10n_scheduler_name = '%s-%s-mozharness-l10n' % (name, platform)
             l10n_builders = []
             platform_env = pf['env'].copy()
             builder_env = platform_env.copy()
