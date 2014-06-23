@@ -1534,7 +1534,7 @@ def generateBranchObjects(config, name, secrets=None):
         pf = config['platforms'][platform]
 
 
-        if pf.get('desktop_mozharness_repack_enabled'):
+        if pf.get('desktop_mozharness_repacks_enabled'):
             print "l10n enabled: {0}".format(platform)
 
 
