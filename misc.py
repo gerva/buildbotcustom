@@ -1533,6 +1533,11 @@ def generateBranchObjects(config, name, secrets=None):
         # shorthand
         pf = config['platforms'][platform]
 
+
+        if pf.get('desktop_mozharness_repack_enabled'):
+            print "l10n enabled: {0}".format(platform)
+
+
         # TODO still need to impl mozharness desktop: try, valgrind, xulrunnner,
         # etc builders
         # For now, let's just record when we create desktop builds like
@@ -1557,10 +1562,6 @@ def generateBranchObjects(config, name, secrets=None):
             # supports.
             # if it is not a desktop mozharness build, follow the mozharness
             # builder logic we had before
-
-            if config.get('desktop_mozharness_repack_enabled'):
-                print "l10n enabled: {0}".format(platform)
-
 
             # we use this condition to enable/disable on a per platform basis
             if platform in config.get('mozharness_desktop_build_platforms'):
