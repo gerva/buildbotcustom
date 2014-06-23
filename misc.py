@@ -1265,7 +1265,7 @@ def generateBranchObjects(config, name, secrets=None):
             prettyNames["%s-valgrind" % platform] = "%s valgrind" % base_name
 
         # Fill the l10n dep dict
-        if pf_enable_l10n and config.get('enable_l10n_onchange'):
+        if config.get('enable_l10n_onchange'):
                 l10nBuilders[base_name] = {}
                 l10nBuilders[base_name]['tree'] = config['l10n_tree']
                 l10nBuilders[base_name]['l10n_builder'] = \
@@ -1525,14 +1525,10 @@ def generateBranchObjects(config, name, secrets=None):
     # to ensure that disabled platforms aren't configured the second time
     enabled_platforms = []
 
-    pf_enable = False
     for platform in sorted(config['platforms'].keys()):
         pf = config['platforms'][platform]
         if pf['stage_product'] in config['enabled_products']:
             enabled_platforms.append(platform)
-
-        pf_enable_l10n = bool(config['enable_l10n'] and
-            platform in config.get('l10n_platforms', []))
 
     for platform in enabled_platforms:
         # shorthand
