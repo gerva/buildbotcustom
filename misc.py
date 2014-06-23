@@ -1537,12 +1537,12 @@ def generateBranchObjects(config, name, secrets=None):
         if pf.get('desktop_mozharness_repacks_enabled'):
             print "l10n enabled: {0}, {1}".format(platform, name)
 
-            l10n_scheduler_name = '%s-%s-mozharness-l10n' % (name, platform)
             l10n_builders = []
             platform_env = pf['env'].copy()
             builder_env = platform_env.copy()
             l10n_chunks = pf['mozharness_desktop_l10n_extra_options']['l10n_chunks']
             for n in range(1, l10n_chunks + 1):
+                l10n_scheduler_name = '%s-%s-l10n_%s' % (name, platform, str(n))
                 builddir = '%s-%s-l10n_%s' % (name, platform, str(n))
                 builderName = "%s l10n nightly %s/%s" % \
                     (pf['base_name'], n, l10n_chunks)
