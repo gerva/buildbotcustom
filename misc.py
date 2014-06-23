@@ -1265,7 +1265,7 @@ def generateBranchObjects(config, name, secrets=None):
             prettyNames["%s-valgrind" % platform] = "%s valgrind" % base_name
 
         # Fill the l10n dep dict
-        if pf_enable_l10n config.get('enable_l10n_onchange'):
+        if pf_enable_l10n and config.get('enable_l10n_onchange'):
                 l10nBuilders[base_name] = {}
                 l10nBuilders[base_name]['tree'] = config['l10n_tree']
                 l10nBuilders[base_name]['l10n_builder'] = \
