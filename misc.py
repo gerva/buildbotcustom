@@ -1541,7 +1541,7 @@ def generateBranchObjects(config, name, secrets=None):
             l10n_builders = []
             platform_env = pf['env'].copy()
             builder_env = platform_env.copy()
-            l10n_chunks = pf['mozharness_config']['l10n_chunks']
+            l10n_chunks = pf['mozharness_desktop_l10n_extra_options']['l10n_chunks']
             for n in range(1, l10n_chunks + 1):
                 builddir = '%s-%s-l10n_%s' % (name, platform, str(n))
                 builderName = "%s l10n nightly %s/%s" % \
