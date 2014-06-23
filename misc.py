@@ -1265,7 +1265,8 @@ def generateBranchObjects(config, name, secrets=None):
             prettyNames["%s-valgrind" % platform] = "%s valgrind" % base_name
 
         # Fill the l10n dep dict
-        if config.get('enable_l10n_onchange'):
+        if config['enable_l10n'] and platform in config['l10n_platforms'] and \
+                config['enable_l10n_onchange']:
                 l10nBuilders[base_name] = {}
                 l10nBuilders[base_name]['tree'] = config['l10n_tree']
                 l10nBuilders[base_name]['l10n_builder'] = \
@@ -1299,8 +1300,7 @@ def generateBranchObjects(config, name, secrets=None):
             builder = '%s nightly' % base_name
             nightlyBuilders.append(builder)
             # Fill the l10nNightly dict
-            #if config['enable_l10n'] and platform in config['l10n_platforms']:
-            if config['enable_l10n'] and not pf.get('mozharness_desktop_l10n'):
+            if config['enable_l10n'] and platform in config['l10n_platforms']:
                 l10nNightlyBuilders[builder] = {}
                 l10nNightlyBuilders[builder]['tree'] = config['l10n_tree']
                 l10nNightlyBuilders[builder]['l10n_builder'] = \
@@ -1524,7 +1524,6 @@ def generateBranchObjects(config, name, secrets=None):
     # We iterate throught the platforms a second time, so we need
     # to ensure that disabled platforms aren't configured the second time
     enabled_platforms = []
-
     for platform in sorted(config['platforms'].keys()):
         pf = config['platforms'][platform]
         if pf['stage_product'] in config['enabled_products']:
@@ -1955,39 +1954,27 @@ def generateBranchObjects(config, name, secrets=None):
                 platform_env['MOZ_UPDATE_CHANNEL'] = config['update_channel']
 
             triggeredSchedulers = None
-            l10n_use_mozharness = False
-            if config['enable_l10n']:
-                if pf.get('is_mobile_l10n') and pf.get('l10n_chunks'):
-                    l10n_use_mozharness = True
-            if pf.get('desktop_mozharness_l10n_repacks_enabled'):
-                l10n_use_mozharness = True
-                print 'use mozharness for l10n desktop repacks on {0}'.format(platform)
-            if l10n_use_mozharness:
-                l10n_scheduler_name = '%s-%s-l10n' % (name, platform)
-                l10n_builders = []
+            if config['enable_l10n'] and pf.get('is_mobile_l10n') and pf.get('l10n_chunks'):
+                mobile_l10n_scheduler_name = '%s-%s-l10n' % (name, platform)
+                mobile_l10n_builders = []
                 builder_env = platform_env.copy()
-                l10n_chunks = pf.get('l10n_chunks')
-                mozharness_conf = 'single_locale/%s_%s.py' % (name, platform),
-                scriptName='scripts/mobile_l10n.py',
-                if not pf.get('is_mobile'):
-                    mozharness_conf = 'single_locale/%s.py' % (platform),
-                    scriptName='scripts/desktop_l10n.py',
-                if pf.get('desktop_mozharness_builds_enabled'):
-                    mozharness_conf = 'single_locale/%s.py' % (platform),
-                    scriptName='scripts/desktop_l10n.py',
-                for n in range(1, int(l10n_chunks) + 1):
+                for n in range(1, int(pf['l10n_chunks']) + 1):
                     builddir = '%s-%s-l10n_%s' % (name, platform, str(n))
                     builderName = "%s l10n nightly-%s" % (pf['base_name'], n)
-                    l10n_builders.append(builderName)
-                    extra_args = ['--config', scriptName,
-                                  '--total-chunks', str(l10n_chunks),
+                    mobile_l10n_builders.append(builderName)
+                    extra_args = ['--cfg',
+                                  'single_locale/%s_%s.py' % (name, platform),
+                                  '--total-chunks', str(pf['l10n_chunks']),
                                   '--this-chunk', str(n)]
-                    print "PF: "
-                    print pf
-                    print "===="
-                    print pf['base_name']
-                    factory = makeMHFactory(config, pf, extra_args=extra_args,
-                        signingServers=secrets.get(pf.get('nightly_signing_servers')))
+                    signing_servers = secrets.get(
+                        pf.get('nightly_signing_servers'))
+                    factory = SigningScriptFactory(
+                        signingServers=signing_servers,
+                        scriptRepo='%s%s' % (config['hgurl'],
+                                             config['mozharness_repo_path']),
+                        scriptName='scripts/mobile_l10n.py',
+                        extra_args=extra_args
+                    )
                     slavebuilddir = normalizeName(builddir, pf['stage_product'])
                     branchObjects['builders'].append({
                         'name': builderName,
@@ -2009,10 +1996,10 @@ def generateBranchObjects(config, name, secrets=None):
                     })
 
                 branchObjects["schedulers"].append(Triggerable(
-                    name=l10n_scheduler_name,
-                    builderNames=l10n_builders
+                    name=mobile_l10n_scheduler_name,
+                    builderNames=mobile_l10n_builders
                 ))
-                triggeredSchedulers = [l10n_scheduler_name]
+                triggeredSchedulers = [mobile_l10n_scheduler_name]
 
             else:  # Non-mobile l10n is done differently at this time
                 if config['enable_l10n'] and platform in config['l10n_platforms'] and \
