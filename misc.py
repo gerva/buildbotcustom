@@ -1556,6 +1556,7 @@ def generateBranchObjects(config, name, secrets=None):
                     scriptRepo='%s%s' % (config['hgurl'],
                                          config['mozharness_repo_path']),
                     scriptName='scripts/desktop_l10n.py',
+                    use_credentials_file=True,
                     extra_args=extra_args
                 )
                 slavebuilddir = normalizeName(builddir, pf['stage_product'])
