@@ -1548,10 +1548,10 @@ def generateBranchObjects(config, name, secrets=None):
                                  config['mozharness_repo_path'])
             # repacks specific configuration is in:
             # platform > mozharness_desktop_l10n
-            scriptName = pf['mozharness_dektop_l10n']['script_name']
-            l10n_chunks = pf['mozharness_dektop_l10n']['l10n_chunks']
-            use_credentials_file = pf['mozharness_dektop_l10n']['use_credentials_file']
-            repack_config = pf['mozharness_dektop_l10n']['config']
+            scriptName = pf['mozharness_desktop_l10n']['script_name']
+            l10n_chunks = pf['mozharness_desktop_l10n']['l10n_chunks']
+            use_credentials_file = pf['mozharness_desktop_l10n']['use_credentials_file']
+            repack_config = pf['mozharness_desktop_l10n']['config']
             # desktop repacks run in chunks...
             for n in range(1, l10n_chunks + 1):
                 l10n_scheduler_name = '%s-%s-l10n_%s' % (name, platform, str(n))
