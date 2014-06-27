@@ -1542,12 +1542,13 @@ def generateBranchObjects(config, name, secrets=None):
             # l10n_chunks = pf['mozharness_desktop_l10n_extra_options']['l10n_chunks']
             # reboot command and python interpreter are defined per platform
             reboot_command = pf['reboot_command']
-            scriptRepo='%s%s' % (config['hgurl'],
-                                 config['mozharness_repo_path'])
+            scriptRepo = '%s%s' % (config['hgurl'],
+                                   config['mozharness_repo_path'])
             # repacks specific configuration is in:
             # platform > mozharness_desktop_l10n
             repacks = pf['mozharness_desktop_l10n']
-            mozharness_python = repacks.get(['mozharness_python'])
+            print repacks
+            mozharness_python = repacks.get('mozharness_python')
             scriptName = repacks['script_name']
             l10n_chunks = repacks['l10n_chunks']
             use_credentials_file = repacks['use_credentials_file']
