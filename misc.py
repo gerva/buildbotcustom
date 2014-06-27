@@ -1549,7 +1549,7 @@ def generateBranchObjects(config, name, secrets=None):
             repacks = pf['mozharness_desktop_l10n']
             print repacks
             mozharness_python = repacks.get('mozharness_python')
-            scriptName = repacks['script_name']
+            scriptName = repacks['scriptName']
             l10n_chunks = repacks['l10n_chunks']
             use_credentials_file = repacks['use_credentials_file']
             repack_config = repacks['config']
