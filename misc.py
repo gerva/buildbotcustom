@@ -1535,23 +1535,24 @@ def generateBranchObjects(config, name, secrets=None):
         stage_platform = pf.get('stage_platform', platform)
 
         if pf.get('desktop_mozharness_repacks_enabled'):
-            print "l10n enabled: {0}, {1}".format(platform, name)
 
             l10n_builders = []
             platform_env = pf['env'].copy()
             builder_env = platform_env.copy()
-            #l10n_chunks = pf['mozharness_desktop_l10n_extra_options']['l10n_chunks']
+            # l10n_chunks = pf['mozharness_desktop_l10n_extra_options']['l10n_chunks']
             # reboot command and python interpreter are defined per platform
             reboot_command = pf['reboot_command']
-            mozharness_python = pf['mozharness_python']
             scriptRepo='%s%s' % (config['hgurl'],
                                  config['mozharness_repo_path'])
             # repacks specific configuration is in:
             # platform > mozharness_desktop_l10n
-            scriptName = pf['mozharness_desktop_l10n']['script_name']
-            l10n_chunks = pf['mozharness_desktop_l10n']['l10n_chunks']
-            use_credentials_file = pf['mozharness_desktop_l10n']['use_credentials_file']
-            repack_config = pf['mozharness_desktop_l10n']['config']
+            repacks = pf['mozharness_desktop_l10n']
+            mozharness_python = repacks.get(['mozharness_python'])
+            scriptName = repacks['script_name']
+            l10n_chunks = repacks['l10n_chunks']
+            use_credentials_file = repacks['use_credentials_file']
+            repack_config = repacks['config']
+            mozharness_python = repacks.get('mozharness_python')
             # desktop repacks run in chunks...
             for n in range(1, l10n_chunks + 1):
                 l10n_scheduler_name = '%s-%s-l10n_%s' % (name, platform, str(n))
