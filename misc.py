@@ -1533,9 +1533,6 @@ def generateBranchObjects(config, name, secrets=None):
     for platform in enabled_platforms:
         # shorthand
         pf = config['platforms'][platform]
-        stage_platform = pf.get('stage_platform', platform)
-
-
 
         # TODO still need to impl mozharness desktop: try, valgrind, xulrunnner,
         # etc builders
