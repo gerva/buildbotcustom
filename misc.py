@@ -2019,7 +2019,6 @@ def generateBranchObjects(config, name, secrets=None):
                     l10n_chunks = repacks['l10n_chunks']
                     use_credentials_file = repacks['use_credentials_file']
                     repack_config = repacks['config']
-                    mozharness_python = repacks.get('mozharness_python')
                     # desktop repacks run in chunks...
                     for n in range(1, l10n_chunks + 1):
                         l10n_scheduler_name = '%s-%s-l10n_%s' % (name, platform, str(n))
