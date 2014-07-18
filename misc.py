@@ -2251,6 +2251,10 @@ def generateBranchObjects(config, name, secrets=None):
                         mozilla2_l10n_nightly_builder)
 
         # end do_nightly
+
+        # enable mozharness desktop repacks
+        # mozharnes repacks are enabled on ash and they might be enable with
+        # standard repacks at least in the initial test phase
         if pf.get('desktop_mozharness_repacks_enabled'):
             l10n_builders = []
             platform_env = pf['env'].copy()
