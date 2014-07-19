@@ -1100,6 +1100,7 @@ def generateDesktopMozharnessBuilders(name, platform, config, secrets,
         desktop_mh_builders.append(nonunified_builder)
         builds_created['done_nonunified_build'] = True
 
+    # if do nightly:
     if config['enable_nightly'] and pf.get('enable_nightly', True):
         # include use_credentials_file for balrog step
         nightly_factory = makeMHFactory(config, pf,
