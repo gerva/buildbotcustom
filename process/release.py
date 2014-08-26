@@ -96,10 +96,7 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
         secrets = {}
 
     def getSigningServers(platform):
-        if 'macosx' in platform:
-            signingServers = secrets.get('mac-release-signing')
-        else:
-            signingServers = secrets.get('release-signing')
+        signingServers = secrets.get('release-signing')
         if releaseConfig.get('enableSigningAtBuildTime', True):
             assert signingServers, 'Please provide a valid list of signing servers'
         return signingServers
@@ -150,6 +147,7 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
         allplatforms = list(releaseConfig['enUSPlatforms'])
         xrplatforms = list(releaseConfig.get('xulrunnerPlatforms', []))
         stage = name.replace(builderPrefix(""), "")
+        releaseChannel = releaseConfig.get("releaseChannel")
         # Detect platform from builder name by tokenizing by '_', and matching
         # the first token after the prefix
         if stage.startswith("xulrunner"):
@@ -375,7 +373,6 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
                     '%s_repo_setup' % releaseConfig['productName']), releaseConfig['productName']),
                 'factory': repository_setup_factory,
                 'env': builder_env,
-                'nextSlave': _nextSlave_skip_spot,
                 'properties': {
                     'slavebuilddir': normalizeName(builderPrefix(
                         '%s_repo_setup' % releaseConfig['productName']), releaseConfig['productName']),
@@ -497,7 +494,6 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
                                 '%s_source' % releaseConfig['productName']), releaseConfig['productName']),
                         'factory': source_factory,
                         'env': builder_env,
-                        'nextSlave': _nextSlave_skip_spot,
                         'properties': {
                             'slavebuilddir': normalizeName(
                                 builderPrefix(
@@ -550,7 +546,6 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
                             'slavebuilddir': normalizeName(builderPrefix('xulrunner_source'), releaseConfig['productName']),
                             'factory': xulrunner_source_factory,
                             'env': builder_env,
-                            'nextSlave': _nextSlave_skip_spot,
                             'properties': {
                                 'slavebuilddir': normalizeName(builderPrefix('xulrunner_source'), releaseConfig['productName']),
                                 'platform': None,
@@ -584,6 +579,8 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
     mozillaDir = None
     if 'mozilla_dir' in releaseConfig:
         mozillaDir = releaseConfig['mozilla_dir']
+    partialUpdates = releaseConfig.get('partialUpdates', {}).copy()
+    partialUpdates.update(releaseConfig.get('extraPartials', {}))
 
     for platform in releaseConfig['enUSPlatforms']:
         # shorthand
@@ -654,7 +651,7 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
                 version=releaseConfig['version'],
                 appVersion=releaseConfig['appVersion'],
                 buildNumber=releaseConfig['buildNumber'],
-                partialUpdates=releaseConfig.get('partialUpdates', {}),
+                partialUpdates=partialUpdates,
                 talosMasters=talosMasters,
                 packageTests=packageTests,
                 unittestMasters=unittestMasters,
@@ -982,7 +979,6 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
                 'slavebuilddir': normalizeName(builderPrefix('xulrunner_%s_build' % platform), releaseConfig['productName']),
                 'factory': xulrunner_build_factory,
                 'env': builder_env,
-                'nextSlave': _nextSlave_skip_spot,
                 'properties': {
                     'slavebuilddir': normalizeName(builderPrefix('xulrunner_%s_build' % platform), releaseConfig['productName']),
                     'platform': platform,
@@ -1052,7 +1048,6 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
                 'slavebuilddir': normalizeName(builderPrefix(
                     'partner_repack', platform), releaseConfig['productName']),
                 'factory': partner_repack_factory,
-                'nextSlave': _nextSlave_skip_spot,
                 'env': builder_env,
                 'properties': {
                     'slavebuilddir': normalizeName(builderPrefix('partner_repack', platform), releaseConfig['productName']),
@@ -1127,7 +1122,6 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
                 'slavebuilddir': normalizeName(builderPrefix('xulrunner_checksums')),
                 'factory': xr_checksums_factory,
                 'env': builder_env,
-                'nextSlave': _nextSlave_skip_spot,
                 'properties': {
                     'slavebuilddir': normalizeName(
                         builderPrefix('xulrunner_checksums')),
@@ -1300,7 +1294,6 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
                 'builddir': builddir,
                 'slavebuilddir': normalizeName(builddir, releaseConfig['productName']),
                 'factory': uv_factory,
-                'nextSlave': _nextSlave_skip_spot,
                 'env': env,
                 'properties': {'builddir': builddir,
                                'slavebuilddir': normalizeName(builddir, releaseConfig['productName']),
@@ -1336,7 +1329,6 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
             'slavebuilddir': normalizeName(builderPrefix('chk_prms'), releaseConfig['productName']),
             'factory': check_permissions_factory,
             'env': builder_env,
-            'nextSlave': _nextSlave_skip_spot,
             'properties': {'slavebuilddir': normalizeName(builderPrefix('chk_prms'), releaseConfig['productName']),
                            'script_repo_revision': releaseTag,
                            'release_config': releaseConfigFile,
@@ -1548,7 +1540,6 @@ def generateReleaseBranchObjects(releaseConfig, branchConfig,
             'builddir': builderPrefix('final_verification'),
             'slavebuilddir': normalizeName(builderPrefix('fnl_verf'), releaseConfig['productName']),
             'factory': final_verification_factory,
-            'nextSlave': _nextSlave_skip_spot,
             'env': builder_env,
             'properties': {
                 'slavebuilddir': normalizeName(builderPrefix('fnl_verf'), releaseConfig['productName']),
