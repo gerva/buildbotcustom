@@ -2281,8 +2281,8 @@ def generateBranchObjects(config, name, secrets=None):
             l10n_chunks = repacks['l10n_chunks']
             use_credentials_file = repacks['use_credentials_file']
             config_dir = 'single_locale'
-            branch_config = os.path.join(config_dir, '%.py' % name)
-            platform_config = os.path.join(config_dir, '%.py' % platform)
+            branch_config = os.path.join(config_dir, '%s.py' % name)
+            platform_config = os.path.join(config_dir, '%s.py' % platform)
             environment_config = os.path.join(config_dir, 'staging.py')
             # desktop repacks run in chunks...
             for n in range(1, l10n_chunks + 1):
