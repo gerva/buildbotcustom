@@ -17,6 +17,8 @@ def testSuiteMatches(v, u):
         return v.startswith('mochitest')
     elif u in ('jittests', 'jittest'):
         return v.startswith('jittest')
+    elif u == 'mochitest-debug':
+        return v.startswith('mochitest-debug-')
     elif u in ('mochitest-o', 'mochitest-chrome', 'mochitest-a11y'):
         return re.search('mochitest-o', v)
     elif u == 'xpcshell':
@@ -25,10 +27,25 @@ def testSuiteMatches(v, u):
         return v.startswith(u)
     elif u == 'mochitest-dt':
         return v.startswith('mochitest-devtools-chrome')
+    elif u.startswith('mochitest-dt'):
+        # mochitest-dt1 and mochitest-dt-1 should run
+        # mochitest-devtools-chrome-1
+        return v == re.sub(r"dt-?", "devtools-chrome-", u)
     elif u in ('mochitest-bc', 'mochitest-browser'):
         return v.startswith('mochitest-browser-chrome')
+    elif u.startswith('mochitest-bc'):
+        # mochitest-bc1 and mochitest-bc-1 should run mochitest-browser-chrome-1
+        return v == re.sub(r"bc-?", "browser-chrome-", u)
     elif u in ('reftests', 'reftest'):
         return v.startswith('reftest') or v.startswith('plain-reftest')
+    elif u in ('web-platform-tests', 'web-platform-test'):
+        return v.startswith("web-platform-tests")
+    elif u == 'e10s':
+        return 'e10s' in v
+    elif u == 'gaia-js-integration':
+        return 'gaia-js-integration' in v
+    elif u == 'gaia-ui-test':
+        return 'gaia-ui-test' in v
     elif u == 'all':
         return True
     else:

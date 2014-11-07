@@ -281,6 +281,8 @@ class BaseHgPoller(BasePoller):
                 files=[],
                 desc="",
                 node=None,
+                commit_titles=[],
+                commit_titles_total_length=0,
             )
 
             i = 0
@@ -307,6 +309,21 @@ class BaseHgPoller(BasePoller):
                     if c['node'] is None:
                         c['desc'] = change['desc']
                         c['node'] = change['node']
+
+                    title = change['desc'].split('\n', 1)[0]
+                    if len(title) > 100:
+                        trim_pos = title.rfind(' ', 0, 100)
+                        if trim_pos == -1:
+                            trim_pos = 100
+                        title = title[:trim_pos]
+                    # The commit titles are stored in a Change property, which
+                    # are limited to 1024 chars in the database (see
+                    # change_properties in buildbot/db/scheme/tables.sql). In
+                    # order to avoid insert/update failures, we enforce a cap
+                    # on the total length with enough room for JSON overhead.
+                    if c['commit_titles_total_length'] + len(title) <= 800:
+                        c['commit_titles_total_length'] += len(title)
+                        c['commit_titles'].append(title)
                 else:
                     c = dict(
                         user=push['user'],
@@ -362,6 +379,10 @@ class BaseHgPoller(BasePoller):
                                    revlink=link,
                                    when=change["date"],
                                    branch=self.branch)
+                if 'commit_titles' in change:
+                    c.properties.setProperty('commit_titles',
+                                             change['commit_titles'],
+                                             'BaseHgPoller')
                 self.changeHook(c)
                 self.parent.addChange(c)
 
