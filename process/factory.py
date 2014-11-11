@@ -2133,7 +2133,6 @@ class NightlyBuildFactory(MercurialBuildFactory):
     def __init__(self, talosMasters=None, unittestMasters=None,
                  unittestBranch=None, tinderboxBuildsDir=None,
                  **kwargs):
-        return
         self.talosMasters = talosMasters or []
 
         self.unittestMasters = unittestMasters or []
@@ -2145,6 +2144,7 @@ class NightlyBuildFactory(MercurialBuildFactory):
         self.tinderboxBuildsDir = tinderboxBuildsDir
 
         MercurialBuildFactory.__init__(self, **kwargs)
+        self.steps =[]
 
     def makePartialTools(self):
         '''The mar and bsdiff tools are created by default when
