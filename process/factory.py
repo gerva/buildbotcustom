@@ -2133,7 +2133,7 @@ class NightlyBuildFactory(MercurialBuildFactory):
     def __init__(self, talosMasters=None, unittestMasters=None,
                  unittestBranch=None, tinderboxBuildsDir=None,
                  **kwargs):
-
+        return
         self.talosMasters = talosMasters or []
 
         self.unittestMasters = unittestMasters or []
@@ -2162,6 +2162,7 @@ class NightlyBuildFactory(MercurialBuildFactory):
         pass
 
     def getCompleteMarPatternMatch(self):
+        return
         marPattern = getPlatformFtpDir(self.platform)
         if not marPattern:
             return False
@@ -2169,12 +2170,14 @@ class NightlyBuildFactory(MercurialBuildFactory):
         return marPattern
 
     def previousMarExists(self, step):
+        return
         return "previousMarFilename" in step.build.getProperties() and len(step.build.getProperty("previousMarFilename")) > 0
 
     def addCreatePartialUpdateSteps(self, extraArgs=None):
         '''This function expects that the following build properties are
            already set: buildid, completeMarFilename
         '''
+        return
         # These tools (mar+mbsdiff) should now be built (or downloaded).
         mar = '../dist/host/bin/mar'
         mbsdiff = '../dist/host/bin/mbsdiff'
@@ -2346,6 +2349,7 @@ class NightlyBuildFactory(MercurialBuildFactory):
         )
 
     def addCreateUpdateSteps(self):
+        return
         self.addStep(ShellCommand(
             name='rm_existing_mars',
             command=['bash', '-c', 'rm -rf *.mar'],
@@ -2359,6 +2363,7 @@ class NightlyBuildFactory(MercurialBuildFactory):
             self.addCreatePartialUpdateSteps()
 
     def addCreateSnippetsSteps(self, milestone_extra=''):
+        return
         MercurialBuildFactory.addCreateSnippetsSteps(self, milestone_extra)
         milestone = self.branchName + milestone_extra
         if self.createPartial:
@@ -2379,6 +2384,7 @@ class NightlyBuildFactory(MercurialBuildFactory):
             ))
 
     def getPreviousBuildUploadDir(self):
+        return
         # Uploading the complete snippet occurs regardless of whether we are
         # generating partials on the slave or not, it just goes to a different
         # path for eventual consumption by the central update generation
@@ -2396,12 +2402,14 @@ class NightlyBuildFactory(MercurialBuildFactory):
             return self.ausFullUploadDir
 
     def getCurrentBuildUploadDir(self):
+        return
         if self.createPartial:
             return "%s/%%(buildid)s/en-US" % self.ausFullUploadDir
         else:
             return self.ausFullUploadDir
 
     def addUploadSnippetsSteps(self):
+        return
         ausPreviousBuildUploadDir = self.getPreviousBuildUploadDir()
         self.addStep(RetryingShellCommand(
             name='create_aus_previous_updir',
@@ -2469,6 +2477,7 @@ class NightlyBuildFactory(MercurialBuildFactory):
             ))
 
     def doUpload(self, postUploadBuildDir=None, uploadMulti=False):
+        return
         # Because of how the RPM packaging works,
         # we need to tell make upload to look for RPMS
         if 'rpm' in self.complete_platform:
