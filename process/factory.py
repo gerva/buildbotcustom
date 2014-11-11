@@ -2144,7 +2144,6 @@ class NightlyBuildFactory(MercurialBuildFactory):
         self.tinderboxBuildsDir = tinderboxBuildsDir
 
         MercurialBuildFactory.__init__(self, **kwargs)
-        self.steps =[]
 
     def makePartialTools(self):
         '''The mar and bsdiff tools are created by default when
