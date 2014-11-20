@@ -1012,23 +1012,18 @@ def generateDesktopMozharnessBuilders(name, platform, config, secrets,
     # grab the l10n schedulers that nightlies will trigger (if any)
     triggered_nightly_schedulers = []
     if (config['enable_l10n'] and platform in config['l10n_platforms'] and
-               '%s nightly' % pf['base_name'] in l10nNightlyBuilders):
+            '%s nightly' % pf['base_name'] in l10nNightlyBuilders):
         triggered_nightly_schedulers = [
             l10nNightlyBuilders['%s nightly' % pf['base_name']]['l10n_builder']
         ]
-        print l10nNightlyBuilders['%s nightly' % pf['base_name']]['l10n_builder']
     elif l10n_with_mozharness(config, platform):
-        builder = '%s nightly' % pf['base_name']
+#        builder_name = '%s nightly' % pf['base_name']
         repacks = l10n_desktop_repacks_with_mozharness(config, platform,
                                                        name, secrets)
         if repacks:
-            print 'builder {0}'.format(builder)
-            print
-            import time
-            time.sleep(1)
-            if builder not in l10nNightlyBuilders:
-                l10nNightlyBuilders[builder]  = {}
-            l10nNightlyBuilders[builder]['l10n_builder'] = repacks['builders']
+#            print 'builder {0}'.format(builder)
+            for builder in repacks['builders']:
+                triggered_nightly_schedulers.append(builder)
 
     # if we do a generic dep build
     if pf.get('enable_dep', True):
@@ -1286,13 +1281,14 @@ def generateBranchObjects(config, name, secrets=None):
                 repacks = l10n_desktop_repacks_with_mozharness(config, platform,
                                                                name, secrets)
                 if repacks:
-                    print 'builder {0}'.format(builder)
-                    print
-                    import time
-                    time.sleep(1)
-                    if builder not in l10nNightlyBuilders:
-                        l10nNightlyBuilders[builder]  = {}
-                    l10nNightlyBuilders[builder]['l10n_builder'] = repacks['builders']
+                    for builder in repacks['builders']:
+                        name = builder['name']
+                        print name
+
+                    for builder in repacks['builders']:
+                        if name not in l10nNightlyBuilders:
+                            l10nNightlyBuilders[name] = {}
+                    l10nNightlyBuilders[name]['l10n_builder'] = builder
 
             else:
                 # no repacks with mozharness, old style repacks
@@ -2016,7 +2012,6 @@ def generateBranchObjects(config, name, secrets=None):
                 # trying to do repacks with mozharness
                     if config['enable_l10n'] and platform in config['l10n_platforms'] and \
                             nightly_builder in l10nNightlyBuilders:
-                        print '({0}) l10n_builder'.format(nightly_builder)
                         triggeredSchedulers = [
                             l10nNightlyBuilders[nightly_builder]['l10n_builder']]
 
@@ -3410,9 +3405,10 @@ def l10n_desktop_repacks_with_mozharness(config, platform, name, secrets):
     # desktop repacks run in chunks...
     for n in range(1, l10n_chunks + 1):
         l10n_scheduler_name = '%s-%s-l10n_%s' % (name, platform, str(n))
-        builddir = '%s-%s-mh-l10n_%s' % (name, platform, str(n))
-        builderName = "%s mh-l10n %s/%s" % \
+        builddir = '%s-%s-l10n_%s' % (name, platform, str(n))
+        builderName = "%s l10n %s/%s" % \
             (pf['base_name'], n, l10n_chunks)
+        print 'builderName = {0}'.format(builderName)
         l10n_builders.append(builderName)
         extra_args = ['--branch-config', branch_config,
                       '--platform-config', platform_config,
