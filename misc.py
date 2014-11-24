@@ -2164,7 +2164,9 @@ def generateBranchObjects(config, name, secrets=None):
             if l10n_with_mozharness(config, platform):
                 repacks = l10n_desktop_repacks_with_mozharness(config, platform, name, secrets)
                 if repacks:
-                    branchObjects['builders'].extend(repacks['builders'])
+                    # this adds builders after a compile step, just skip
+                    pass
+                    # branchObjects['builders'].extend(repacks['builders'])
 
             elif config['enable_l10n']:
                 if platform in config['l10n_platforms']:
