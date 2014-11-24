@@ -1021,7 +1021,9 @@ def generateDesktopMozharnessBuilders(name, platform, config, secrets,
                                                        name, secrets)
         if repacks:
             for builder in repacks['builders']:
-                triggered_nightly_schedulers.append(builder)
+                # this adds builders after a compile step, just skip
+                pass
+                # triggered_nightly_schedulers.append(builder)
 
     # if we do a generic dep build
     if pf.get('enable_dep', True):
@@ -2164,9 +2166,7 @@ def generateBranchObjects(config, name, secrets=None):
             if l10n_with_mozharness(config, platform):
                 repacks = l10n_desktop_repacks_with_mozharness(config, platform, name, secrets)
                 if repacks:
-                    # this adds builders after a compile step, just skip
-                    pass
-                    # branchObjects['builders'].extend(repacks['builders'])
+                    branchObjects['builders'].extend(repacks['builders'])
 
             elif config['enable_l10n']:
                 if platform in config['l10n_platforms']:
