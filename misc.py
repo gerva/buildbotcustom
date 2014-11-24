@@ -1021,7 +1021,8 @@ def generateDesktopMozharnessBuilders(name, platform, config, secrets,
                                                        name, secrets)
         if repacks:
             # add repack builders to triggered nightly schedulers
-            triggered_nightly_schedulers.extend(repacks['builders'])
+            for builder in repacks['builders']:
+                triggered_nightly_schedulers.extend(builder['name'])
 
     # if we do a generic dep build
     if pf.get('enable_dep', True):
