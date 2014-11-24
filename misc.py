@@ -1417,7 +1417,25 @@ def generateBranchObjects(config, name, secrets=None):
                 'en_revision': 'default',
             }
         ))
-    # no l10n_builders with mozharness (they're available only in nightlies)
+
+    elif config.get('desktop_mozharness_repacks_enabled', False):
+        l10n_builders = []
+        for b in l10nBuilders:
+            l10n_builders.append(l10nBuilders[b]['l10n_builder'])
+        nomergeBuilders.update(l10n_builders)
+        # This L10n scheduler triggers only the builders of its own branch
+        branchObjects['schedulers'].append(Scheduler(
+            name="%s l10n" % name,
+            branch=config['repo_path'],
+            treeStableTimer=None,
+            builderNames=l10n_builders,
+            fileIsImportant=lambda c: isImportantL10nFile(
+                c, config['l10n_modules']),
+            properties={
+                'app': 'browser',
+                'en_revision': 'default',
+            }
+        ))
 
     # Now, setup the nightly en-US schedulers and maybe,
     # their downstream l10n ones
