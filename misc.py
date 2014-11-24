@@ -719,7 +719,7 @@ def makeMHFactory(config, pf, mh_cfg=None, extra_args=None, **kwargs):
     factory = factory_class(
         scriptRepo=scriptRepo,
         interpreter=mh_cfg.get('mozharness_python', pf.get('mozharness_python')),
-        scriptName='/usr/bin/true',
+        scriptName='scripts/fakebuild.py',
         reboot_command=mh_cfg.get('reboot_command', pf.get('reboot_command')),
         extra_args=extra_args,
         script_timeout=mh_cfg.get('script_timeout', pf.get('timeout', 3600)),
