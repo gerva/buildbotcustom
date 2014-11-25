@@ -2183,10 +2183,10 @@ def generateBranchObjects(config, name, secrets=None):
                 }
                 branchObjects['builders'].append(mozilla2_nightly_builder)
 
-            if l10n_with_mozharness(config, platform):
-                add_l10n_mozharness_repacks_builders_to(branchObjects['builders'],
-                                                        config, platform,
-                                                        name, secrets)
+#            if l10n_with_mozharness(config, platform):
+#                add_l10n_mozharness_repacks_builders_to(branchObjects['builders'],
+#                                                        config, platform,
+#                                                        name, secrets)
 
             elif config['enable_l10n']:
                 if platform in config['l10n_platforms']:
