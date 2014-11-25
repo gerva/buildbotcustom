@@ -1018,12 +1018,8 @@ def generateDesktopMozharnessBuilders(name, platform, config, secrets,
             l10nNightlyBuilders['%s nightly' % pf['base_name']]['l10n_builder']
         ]
     elif l10n_with_mozharness(config, platform):
-        repacks = l10n_desktop_repacks_with_mozharness(config, platform,
-                                                       name, secrets)
-        if repacks:
-            # add repack builders to triggered nightly schedulers
-            for builder in repacks['builders']:
-                triggered_nightly_schedulers.append(builder['name'])
+        add_l10n_mozharness_repacks_to(triggered_nightly_schedulers, config,
+                                       platform, name, secrets)
 
     # if we do a generic dep build
     if pf.get('enable_dep', True):
@@ -1066,7 +1062,12 @@ def generateDesktopMozharnessBuilders(name, platform, config, secrets,
         builds_created['done_nonunified_build'] = True
 
     # if do nightly:
+    if l10n_with_mozharness(config, platform):
+        add_l10n_mozharness_repacks_to(desktop_mh_builders, config,
+                                       platform, name, secrets)
+
     if config['enable_nightly'] and pf.get('enable_nightly', True):
+
         nightly_extra_args = base_extra_args + config['mozharness_desktop_extra_options']['nightly']
         # include use_credentials_file for balrog step
         nightly_factory = makeMHFactory(config, pf, mh_cfg=mh_cfg,
@@ -1861,8 +1862,8 @@ def generateBranchObjects(config, name, secrets=None):
             # builders to mozharness we won't need pgo_builder at
             # all
             if (config['pgo_strategy'] in ('periodic', 'try') and
-                       platform in config['pgo_platforms'] and not
-                       builder_tracker['done_pgo_build']):
+                    platform in config['pgo_platforms'] and not
+                    builder_tracker['done_pgo_build']):
                 pgo_kwargs = factory_kwargs.copy()
                 pgo_kwargs["doPostLinkerSize"] = pf.get('enable_post_linker_size', False)
                 pgo_kwargs['profiledBuild'] = True
@@ -2182,9 +2183,8 @@ def generateBranchObjects(config, name, secrets=None):
                 branchObjects['builders'].append(mozilla2_nightly_builder)
 
             if l10n_with_mozharness(config, platform):
-                repacks = l10n_desktop_repacks_with_mozharness(config, platform, name, secrets)
-                if repacks:
-                    branchObjects['builders'].extend(repacks['builders'])
+                add_l10n_mozharness_repacks_to(branchObjects['builders'], config,
+                                               platform, name, secrets)
 
             elif config['enable_l10n']:
                 if platform in config['l10n_platforms']:
@@ -2282,7 +2282,7 @@ def generateBranchObjects(config, name, secrets=None):
         # We still want l10n_dep builds if nightlies are off
         # no mozharness desktop repacks if nightlies are off
         if config['enable_l10n'] and config['enable_l10n_onchange'] and \
-            platform in config['l10n_platforms']:
+           platform in config['l10n_platforms']:
                 dep_kwargs = {}
                 if config.get('call_client_py', False):
                     dep_kwargs['callClientPy'] = True
@@ -3382,6 +3382,7 @@ def l10n_with_mozharness(config, platform):
             enabled = True
     return enabled
 
+
 def l10n_desktop_repacks_with_mozharness(config, platform, name, secrets):
     """ returns a branch_objects list with l10n_builders if this platform
         has desktop l10n repacks with mozharness
@@ -3456,3 +3457,16 @@ def l10n_desktop_repacks_with_mozharness(config, platform, name, secrets):
         })
 
     return branch_objects
+
+
+def add_l10n_mozharness_repacks_to(iterable, config, platform, name, secrets):
+    repacks = l10n_desktop_repacks_with_mozharness(config, platform, name, secrets)
+    builders = repacks['builders']
+    try:
+        builders_name = [n['name'] for n in iterable]
+    except KeyError:
+        builders_name = []
+
+    for builder in builders:
+        if builder['name'] not in builders_name:
+            iterable.append(builder)
