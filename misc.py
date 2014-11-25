@@ -1018,8 +1018,9 @@ def generateDesktopMozharnessBuilders(name, platform, config, secrets,
             l10nNightlyBuilders['%s nightly' % pf['base_name']]['l10n_builder']
         ]
     elif l10n_with_mozharness(config, platform):
-        add_l10n_mozharness_repacks_to(triggered_nightly_schedulers, config,
-                                       platform, name, secrets)
+        add_l10n_mozharness_repacks_schedulers_to(triggered_nightly_schedulers,
+                                                  config, platform,
+                                                  name, secrets)
 
     # if we do a generic dep build
     if pf.get('enable_dep', True):
@@ -1063,8 +1064,8 @@ def generateDesktopMozharnessBuilders(name, platform, config, secrets,
 
     # if do nightly:
     if l10n_with_mozharness(config, platform):
-        add_l10n_mozharness_repacks_to(desktop_mh_builders, config,
-                                       platform, name, secrets)
+        add_l10n_mozharness_repacks_builders_to(desktop_mh_builders, config,
+                                                platform, name, secrets)
 
     if config['enable_nightly'] and pf.get('enable_nightly', True):
 
@@ -2183,8 +2184,9 @@ def generateBranchObjects(config, name, secrets=None):
                 branchObjects['builders'].append(mozilla2_nightly_builder)
 
             if l10n_with_mozharness(config, platform):
-                add_l10n_mozharness_repacks_to(branchObjects['builders'], config,
-                                               platform, name, secrets)
+                add_l10n_mozharness_repacks_builders_to(branchObjects['builders'],
+                                                        config, platform,
+                                                        name, secrets)
 
             elif config['enable_l10n']:
                 if platform in config['l10n_platforms']:
@@ -3459,7 +3461,17 @@ def l10n_desktop_repacks_with_mozharness(config, platform, name, secrets):
     return branch_objects
 
 
-def add_l10n_mozharness_repacks_to(iterable, config, platform, name, secrets):
+def add_l10n_mozharness_repacks_schedulers_to(scheduler_list, config, platform,
+                                              name, secrets):
+    repacks = l10n_desktop_repacks_with_mozharness(config, platform, name, secrets)
+    builders = repacks['builders']
+
+    for builder in builders:
+        if builder['name'] not in scheduler_list:
+            scheduler_list.append(builder['name'])
+
+
+def add_l10n_mozharness_repacks_builders_to(iterable, config, platform, name, secrets):
     repacks = l10n_desktop_repacks_with_mozharness(config, platform, name, secrets)
     builders = repacks['builders']
     try:
