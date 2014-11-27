@@ -1276,7 +1276,7 @@ def generateBranchObjects(config, name, secrets=None):
             # Fill the l10nNightly dict
             # trying to do repacks with mozharness
             if is_l10n_with_mh(config, platform):
-                print "line 1285: {0}".format(pf['base_name'])
+                # print "line 1285: {0}".format(pf['base_name'])
                 builder_names = mh_l10n_builder_names(config, platform,
                                                       is_nightly=True)
                 l10nNightlyBuilders[builder] = {}
@@ -1487,21 +1487,15 @@ def generateBranchObjects(config, name, secrets=None):
             if config.get('desktop_mozharness_repacks_enabled', False) and \
                builder in l10nNightlyBuilders:
                 # l10n triggers multiple builders
-                print "line 1513"
+                # print "line 1513, builder={0}".format(builder)
                 l10n_builders = l10nNightlyBuilders[builder]['l10n_builders']
                 nomergeBuilders.add(l10n_builder)
                 platform = l10nNightlyBuilders[builder]['platform']
                 for l10n_builder in l10n_builders:
-
-                    branchObjects['schedulers'].append(TriggerableL10n(
-                                                       name=l10n_builder,
-                                                       platform=platform,
-                                                       builderNames=l10n_builders,
-                                                       branch=config['repo_path'],
-                                                       baseTag='default',
-                                                       localesURL=config.get(
-                                                         'localesURL', None)
-                                                   ))
+                    scheduler = Scheduler(name=l10n_builder,
+                                          builderNames=l10n_builders,
+                                          branch=config['repo_path'])
+                    branchObjects['schedulers'].append(scheduler)
 
     if weeklyBuilders:
         weekly_scheduler = Nightly(
