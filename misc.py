@@ -1231,12 +1231,9 @@ def generateBranchObjects(config, name, secrets=None):
 
         # Fill the l10n dep dict
         # trying to do repacks with mozharness
+        # no dep repacks with mh, for now
         if is_l10n_with_mh(config, platform):
-            # add l10nBuilders
-            builder_names = mh_l10n_builder_names(config, platform, is_nightly=True)
-            l10nBuilders[base_name] = {}
-            l10nBuilders[base_name]['l10n_builders'] = builder_names
-            l10nBuilders[base_name]['platform'] = platform
+            pass
         else:
             # old style repacks
             if config['enable_l10n'] and platform in config['l10n_platforms'] and \
@@ -1279,13 +1276,14 @@ def generateBranchObjects(config, name, secrets=None):
             # Fill the l10nNightly dict
             # trying to do repacks with mozharness
             if is_l10n_with_mh(config, platform):
-                # print "line 1285: {0}".format(pf['base_name'])
+                print "line 1285: {0}".format(pf['base_name'])
                 builder_names = mh_l10n_builder_names(config, platform,
                                                       is_nightly=True)
                 l10nNightlyBuilders[builder] = {}
                 l10nNightlyBuilders[builder]['l10n_builders'] = builder_names
                 l10nNightlyBuilders[builder]['platform'] = platform
 
+                print l10nNightlyBuilders[builder]
             else:
                 # no repacks with mozharness, old style repacks
                 if config['enable_l10n'] and platform in config['l10n_platforms']:
@@ -1422,27 +1420,6 @@ def generateBranchObjects(config, name, secrets=None):
             }
         ))
 
-    elif config.get('desktop_mozharness_repacks_enabled', False):
-        # print "desktop_mozharness_Repacks_enabled"
-        l10n_builders = []
-        for b in l10nBuilders:
-            l10n_builders.extend(l10nBuilders[b]['l10n_builders'])
-        # print "l10n builders: {0}".format(l10n_builders)
-        nomergeBuilders.update(l10n_builders)
-        # This L10n scheduler triggers only the builders of its own branch
-        branchObjects['schedulers'].append(Scheduler(
-            name="%s l10n" % name,
-            branch=config['repo_path'],
-            treeStableTimer=None,
-            builderNames=l10n_builders,
-            fileIsImportant=lambda c: isImportantL10nFile(
-                c, config['l10n_modules']),
-            properties={
-                'app': 'browser',
-                'en_revision': 'default',
-            }
-        ))
-
     # Now, setup the nightly en-US schedulers and maybe,
     # their downstream l10n ones
     if nightlyBuilders or xulrunnerNightlyBuilders:
@@ -1507,19 +1484,23 @@ def generateBranchObjects(config, name, secrets=None):
                                                ))
         else:
             # looping through l10n builders
-            if is_l10n_with_mh(config, platform) and \
-                    builder in l10nNightlyBuilders:
+            if config.get('desktop_mozharness_repacks_enabled', False) and \
+               builder in l10nNightlyBuilders:
+                # l10n triggers multiple builders
+                print "line 1513"
                 l10n_builders = l10nNightlyBuilders[builder]['l10n_builders']
                 nomergeBuilders.add(l10n_builder)
                 platform = l10nNightlyBuilders[builder]['platform']
-                branchObjects['schedulers'].append(TriggerableL10n(
-                                                   name=l10n_builder,
-                                                   platform=platform,
-                                                   builderNames=l10n_builders,
-                                                   branch=config['repo_path'],
-                                                   baseTag='default',
-                                                   localesURL=config.get(
-                                                       'localesURL', None)
+                for l10n_builder in l10n_builders:
+
+                    branchObjects['schedulers'].append(TriggerableL10n(
+                                                       name=l10n_builder,
+                                                       platform=platform,
+                                                       builderNames=l10n_builders,
+                                                       branch=config['repo_path'],
+                                                       baseTag='default',
+                                                       localesURL=config.get(
+                                                         'localesURL', None)
                                                    ))
 
     if weeklyBuilders:
