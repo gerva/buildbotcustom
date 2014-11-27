@@ -1020,7 +1020,7 @@ def generateDesktopMozharnessBuilders(name, platform, config, secrets,
     elif is_l10n_with_mh(config, platform):
         # print "line 1020: {0} (scheduler)".format(pf['base_name'])
         mh_schdulers = mh_l10n_scheduler_names(config, platform, is_nightly=True)
-        # print "adding {0} to triggered_nightly_schedulers".format(mh_builders)
+        # print "adding {0} to triggered_nightly_schedulers".format(mh_schdulers)
         triggered_nightly_schedulers.extend(mh_schdulers)
 
     # if we do a generic dep build
@@ -2034,7 +2034,7 @@ def generateBranchObjects(config, name, secrets=None):
                     # print "line 2036: {0} (scheduler)".format(pf['base_name'])
                     mh_schedulers = mh_l10n_scheduler_names(config, platform,
                                                             is_nightly=True)
-                    #print "adding {0} to triggeredSchedulers".format(mh_schedulers)
+                    # print "adding {0} to triggeredSchedulers".format(mh_schedulers)
                     triggeredSchedulers = mh_schedulers
 
             create_snippet = config['create_snippet']
@@ -2196,7 +2196,7 @@ def generateBranchObjects(config, name, secrets=None):
                 mh_builders = mh_l10n_builders(config, platform,
                                                secrets, is_nightly=True)
                 current_builders = [b['name'] for b in branchObjects['builders']]
-                #print "current_builders: {0}".format(current_builders)
+                # print "current_builders: {0}".format(current_builders)
                 for b in mh_builders['builders']:
                     if b['name'] not in current_builders:
                         # print "adding: {0}".format(b['name'])
@@ -3485,6 +3485,7 @@ def mh_l10n_builddir_from_builder_name(builder_name):
     b_dir = b_dir.replace(' ', '-')
     return b_dir.replace('/', '_')
 
+
 def mh_l10n_builder_name(name, chunk, total_chunks):
     return "%s l10n %s/%s" % (name, chunk, total_chunks)
 
@@ -3507,7 +3508,7 @@ def mh_l10n_scheduler_names(config, platform, is_nightly):
     repacks = pf['mozharness_desktop_l10n']
     l10n_chunks = repacks['l10n_chunks']
     for n in range(1, l10n_chunks + 1):
-        names.append(mh_l10n_scheduler_name(pf, n))
+        names.append(mh_l10n_scheduler_name(name, n))
     return names
 
 
