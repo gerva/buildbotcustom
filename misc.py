@@ -1018,7 +1018,7 @@ def generateDesktopMozharnessBuilders(name, platform, config, secrets,
             l10nNightlyBuilders['%s nightly' % pf['base_name']]['l10n_builder']
         ]
     elif is_l10n_with_mh(config, platform):
-        # print "line 1020: {0} (scheduler)".format(pf['base_name'])
+        print "line 1020: {0} (scheduler)".format(pf['base_name'])
         mh_builders = mh_l10n_builder_names(config, platform,
                                             name=pf['base_name'],
                                             is_nightly=True)
@@ -2035,11 +2035,11 @@ def generateBranchObjects(config, name, secrets=None):
                         l10nNightlyBuilders[nightly_builder]['l10n_builder']]
                 elif is_l10n_with_mh(config, platform):
                     # trying to do repacks with mozharness
-                    # print "line 2036: {0} (scheduler)".format(pf['base_name'])
+                    print "line 2036: {0} (scheduler)".format(pf['base_name'])
                     mh_builders_names = mh_l10n_builder_names(config, platform,
                                                               name=pf['base_name'],
                                                               is_nightly=True)
-                    # print "adding {0} to triggeredSchedulers".format(mh_builders_names)
+                    print "adding {0} to triggeredSchedulers".format(mh_builders_names)
                     triggeredSchedulers = mh_builders_names
 
             create_snippet = config['create_snippet']
@@ -2197,10 +2197,15 @@ def generateBranchObjects(config, name, secrets=None):
                 }
                 branchObjects['builders'].append(mozilla2_nightly_builder)
 
-#            if is_l10n_with_mh(config, platform):
-#                add_l10n_mozharness_repacks_builders_to(branchObjects['builders'],
-#                                                        config, platform,
-#                                                        name, secrets)
+            if is_l10n_with_mh(config, platform):
+                mh_builders = mh_l10n_builders(config, platform, name, secrets,
+                                               is_nightly=True)
+                current_builders = [b['name'] for b in branchObjects['builders']]
+                print "current_builders: {0}".format(current_builders)
+                for b in mh_builders['builders']:
+                    if b['name'] not in current_builders:
+                        print "adding: {0}".format(b['name'])
+                        branchObjects['builders'].append(b)
 
             elif config['enable_l10n']:
                 if platform in config['l10n_platforms']:
@@ -3478,7 +3483,7 @@ def mh_l10n_builders(config, platform, name, secrets, is_nightly):
 
 
 def mh_l10n_builder_name(platform, name, chunk, total_chunks):
-    return "%s l10n %s/%s" % (name, chunk, total_chunks)
+    return "%s %s l10n %s/%s" % (platform, name, chunk, total_chunks)
 
 
 def mh_l10n_builder_names(config, platform, name, is_nightly):
@@ -3489,7 +3494,7 @@ def mh_l10n_builder_names(config, platform, name, is_nightly):
         return names
 
     if is_nightly:
-        name = '%s nightly' % name
+        name = '%s %s nightly' % (platform, name)
     pf = config['platforms'][platform]
     repacks = pf['mozharness_desktop_l10n']
     l10n_chunks = repacks['l10n_chunks']
