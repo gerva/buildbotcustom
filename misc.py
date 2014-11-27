@@ -1275,17 +1275,10 @@ def generateBranchObjects(config, name, secrets=None):
             # Fill the l10nNightly dict
             # trying to do repacks with mozharness
             if is_l10n_with_mh(config, platform):
-                # print "line 1285: {0}".format(pf['base_name'])
-                mh_bo = mh_l10n_branch_objects(config, platform,
-                                               secrets, is_nightly=True)
-                current_builders = [b['name'] for b in branchObjects['builders']]
-                # print "current_builders: {0}".format(current_builders)
-                for builder_ in mh_bo['builders']:
-                    if builder_['name'] not in current_builders:
-                        # print "adding: {0}".format(b['name'])
-                        branchObjects['builders'].append(builder_)
-                if mh_bo['schedulers'] not in branchObjects['schedulers']:
-                    branchObjects['schedulers'].append(mh_bo['schedulers'])
+#                added = mh_l10n_update_branch_objects(branchObjects, config, platform,
+#                                                      secrets, is_nightly=True)
+#                print "line: 1279: added builders {0}, added scheduler {1}".format(added[0], added[1])
+                pass
 
             else:
                 # no repacks with mozharness, old style repacks
@@ -2159,16 +2152,9 @@ def generateBranchObjects(config, name, secrets=None):
                 branchObjects['builders'].append(mozilla2_nightly_builder)
 
             if is_l10n_with_mh(config, platform):
-                mh_bo = mh_l10n_branch_objects(config, platform,
-                                               secrets, is_nightly=True)
-                current_builders = [b['name'] for b in branchObjects['builders']]
-                # print "current_builders: {0}".format(current_builders)
-                for builder_ in mh_bo['builders']:
-                    if builder_['name'] not in current_builders:
-                        # print "adding: {0}".format(b['name'])
-                        branchObjects['builders'].append(builder_)
-                if mh_bo['schedulers'] not in branchObjects['schedulers']:
-                    branchObjects['schedulers'].append(mh_bo['schedulers'])
+                added = mh_l10n_update_branch_objects(branchObjects, config, platform,
+                                                      secrets, is_nightly=True)
+                print "line: 2157: added builders {0}, added scheduler {1}".format(added[0], added[1])
 
             elif config['enable_l10n']:
                 if platform in config['l10n_platforms']:
@@ -3481,3 +3467,21 @@ def mh_l10n_builder_names(config, platform, is_nightly):
     for n in range(1, l10n_chunks + 1):
         names.append(mh_l10n_builder_name(name, n, l10n_chunks))
     return names
+
+def mh_l10n_update_branch_objects(branch_object, config, platform, secrets,
+                                 is_nightly):
+    added_builders = False
+    added_schedulers = False
+    # new branch objects..
+    mh_bo = mh_l10n_branch_objects(config, platform, secrets, is_nightly)
+    current_builders = [b['name'] for b in branch_object['builders']]
+    # print "current_builders: {0}".format(current_builders)
+    for builder_ in mh_bo['builders']:
+        if builder_['name'] not in current_builders:
+            # print "adding: {0}".format(b['name'])
+            branch_object['builders'].append(builder_)
+            added_builders = True
+    if mh_bo['schedulers'] not in branch_object['schedulers']:
+        branch_object['schedulers'].append(mh_bo['schedulers'])
+        added_schedulers = True
+    return (added_builders, added_schedulers)
