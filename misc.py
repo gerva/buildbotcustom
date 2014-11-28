@@ -1019,7 +1019,8 @@ def generateDesktopMozharnessBuilders(name, platform, config, secrets,
         ]
     elif is_l10n_with_mh(config, platform):
         # nothing to do here with mozharness desktop repacks
-        pass
+        builder_names = mh_l10n_builder_names(config, platform, is_nightly=True)
+        triggered_nightly_schedulers.extend(builder_names)
 
     # if we do a generic dep build
     if pf.get('enable_dep', True):
