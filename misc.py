@@ -1279,6 +1279,12 @@ def generateBranchObjects(config, name, secrets=None):
                 added = mh_l10n_update_branch_objects(branchObjects, config,
                                                       name, platform,
                                                       secrets, is_nightly=True)
+                # we need this later...
+                builder_names = mh_l10n_builder_names(config, platform,
+                                                      is_nightly=True)
+                l10nNightlyBuilders[builder] = {}
+                l10nNightlyBuilders[builder]['l10n_builder'] = builder_names
+                l10nNightlyBuilders[builder]['platform'] = platform
                 print "line: 1279: added builders {0}, added scheduler {1}".format(added[0], added[1])
 
             else:
@@ -1481,9 +1487,16 @@ def generateBranchObjects(config, name, secrets=None):
                                                ))
         else:
             # looping through l10n builders
-            if config.get('desktop_mozharness_repacks_enabled', False):
-                # nothing to do here!
-                pass
+            if config.get('desktop_mozharness_repacks_enabled', False) and \
+               builder in l10nNightlyBuilders:
+                for l10n_builder in l10nNightlyBuilders[builder]['l10n_builder']:
+                    nomergeBuilders.add(l10n_builder)
+                    triggerable = Triggerable(name=l10n_builder,
+                                              builderNames=[l10n_builder])
+                    branchObjects['schedulers'].append(triggerable)
+                # scheduler = Scheduler(name=l10nNightlyBuilders
+                # branchObject['schedulers'].append(Scheduler()
+                # print "1485: {0} / {1}".format(builder, platform)
 
     if weeklyBuilders:
         weekly_scheduler = Nightly(
