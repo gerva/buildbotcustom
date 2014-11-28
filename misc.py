@@ -1275,10 +1275,10 @@ def generateBranchObjects(config, name, secrets=None):
             # Fill the l10nNightly dict
             # trying to do repacks with mozharness
             if is_l10n_with_mh(config, platform):
-#                added = mh_l10n_update_branch_objects(branchObjects, config, platform,
-#                                                      secrets, is_nightly=True)
-#                print "line: 1279: added builders {0}, added scheduler {1}".format(added[0], added[1])
-                pass
+                added = mh_l10n_update_branch_objects(branchObjects, config,
+                                                      name, platform,
+                                                      secrets, is_nightly=True)
+                print "line: 1279: added builders {0}, added scheduler {1}".format(added[0], added[1])
 
             else:
                 # no repacks with mozharness, old style repacks
@@ -2152,7 +2152,8 @@ def generateBranchObjects(config, name, secrets=None):
                 branchObjects['builders'].append(mozilla2_nightly_builder)
 
             if is_l10n_with_mh(config, platform):
-                added = mh_l10n_update_branch_objects(branchObjects, config, platform,
+                added = mh_l10n_update_branch_objects(branchObjects, config,
+                                                      name, platform,
                                                       secrets, is_nightly=True)
                 print "line: 2157: added builders {0}, added scheduler {1}".format(added[0], added[1])
 
@@ -3353,7 +3354,7 @@ def is_l10n_with_mh(config, platform):
     return enabled
 
 
-def mh_l10n_branch_objects(config, platform, secrets, is_nightly):
+def mh_l10n_branch_objects(config, platform, branch, secrets, is_nightly):
     """ returns a branch_objects list with l10n_builders if this platform
         has desktop l10n repacks with mozharness
         it returns and empty list if this configuration/platform does not
@@ -3383,7 +3384,7 @@ def mh_l10n_branch_objects(config, platform, secrets, is_nightly):
     l10n_chunks = repacks['l10n_chunks']
     use_credentials_file = repacks['use_credentials_file']
     config_dir = 'single_locale'
-    branch_config = os.path.join(config_dir, '%s.py' % name)
+    branch_config = os.path.join(config_dir, '%s.py' % branch)
     platform_config = os.path.join(config_dir, '%s.py' % platform)
     environment_config = os.path.join(config_dir, 'production.py')
     # desktop repacks run in chunks...
@@ -3468,17 +3469,17 @@ def mh_l10n_builder_names(config, platform, is_nightly):
         names.append(mh_l10n_builder_name(name, n, l10n_chunks))
     return names
 
-def mh_l10n_update_branch_objects(branch_object, config, platform, secrets,
-                                 is_nightly):
+
+def mh_l10n_update_branch_objects(branch_object, config, branch, platform,
+                                  secrets, is_nightly):
     added_builders = False
     added_schedulers = False
     # new branch objects..
-    mh_bo = mh_l10n_branch_objects(config, platform, secrets, is_nightly)
+    mh_bo = mh_l10n_branch_objects(config, platform, branch, secrets, is_nightly)
     current_builders = [b['name'] for b in branch_object['builders']]
     # print "current_builders: {0}".format(current_builders)
     for builder_ in mh_bo['builders']:
         if builder_['name'] not in current_builders:
-            # print "adding: {0}".format(b['name'])
             branch_object['builders'].append(builder_)
             added_builders = True
     if mh_bo['schedulers'] not in branch_object['schedulers']:
