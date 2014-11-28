@@ -701,9 +701,8 @@ def makeMHFactory(config, pf, mh_cfg=None, extra_args=None, **kwargs):
         else:
             del kwargs['signingServers']
 
-#    scriptRepo = config.get('mozharness_repo_url',
-#                            '%s%s' % (config['hgurl'], config['mozharness_repo_path']))
-    scriptRepo = 'https://hg.mozilla.org/users/mgervasini_mozilla.com/mozharness'
+    scriptRepo = config.get('mozharness_repo_url',
+                            '%s%s' % (config['hgurl'], config['mozharness_repo_path']))
     script_repo_cache = None
     if config.get('use_mozharness_repo_cache'):  # branch supports it
         script_repo_cache = mh_cfg.get('mozharness_repo_cache',
