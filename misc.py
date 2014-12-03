@@ -3367,10 +3367,10 @@ def mh_l10n_builders(config, platform, branch, secrets, is_nightly):
     """ returns a dictionary with builders and schedulers
         """
     # let's check if we need to create builders for this config/platform
-    branch_objects = {'builders': [], 'schedulers': []}
+    builders = []
     if not is_l10n_with_mh(config, platform):
         # no mozharness l10n repacks for this platform
-        return branch_objects
+        return builders
 
     l10n_builders = []
     pf = config['platforms'][platform]
@@ -3419,7 +3419,7 @@ def mh_l10n_builders(config, platform, branch, secrets, is_nightly):
         )
         slavebuilddir = normalizeName(builddir)
         # was: slavebuilddir = normalizeName(builddir, pf['stage_product'])
-        branch_objects['builders'].append({
+        builders.append({
             'name': builderName,
             'slavenames': pf.get('slaves'),
             'builddir': builddir,
@@ -3436,7 +3436,7 @@ def mh_l10n_builders(config, platform, branch, secrets, is_nightly):
                            'script_repo_revision': config['mozharness_tag'], },
             'env': builder_env
         })
-    return branch_objects
+    return builders
 
 
 def mh_l10n_builddir_from_builder_name(builder_name):
