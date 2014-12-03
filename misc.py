@@ -1084,8 +1084,8 @@ def generateDesktopMozharnessBuilders(name, platform, config, secrets,
         desktop_mh_builders.append(nightly_builder)
         builds_created['done_nightly_build'] = True
         if is_l10n_with_mh(config, platform):
-            l10n_builders = mh_l10n_branch_objects(config, platform, name,
-                                                   secrets, is_nightly=True)
+            l10n_builders = mh_l10n_builders(config, platform, name, secrets,
+                                             is_nightly=True)
             desktop_mh_builders.extend(l10n_builders)
             builds_created['done_l10n_repacks'] = True
 
@@ -3363,7 +3363,7 @@ def is_l10n_with_mh(config, platform):
     return enabled
 
 
-def mh_l10n_branch_objects(config, platform, branch, secrets, is_nightly):
+def mh_l10n_builders(config, platform, branch, secrets, is_nightly):
     """ returns a dictionary with builders and schedulers
         """
     # let's check if we need to create builders for this config/platform
@@ -3463,13 +3463,3 @@ def mh_l10n_builder_names(config, platform, is_nightly):
         builder_name = "%s l10n %s/%s" % (name, chunk, l10n_chunks)
         names.append(builder_name)
     return names
-
-
-def mh_l10n_update_branch_objects(branch_object, config, branch, platform,
-                                  secrets, is_nightly):
-    # new branch objects..
-    mh_bo = mh_l10n_branch_objects(config, platform, branch, secrets, is_nightly)
-    current_builders = [b['name'] for b in branch_object['builders']]
-    for builder_ in mh_bo['builders']:
-        if builder_['name'] not in current_builders:
-            branch_object['builders'].append(builder_)
