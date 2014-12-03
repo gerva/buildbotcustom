@@ -1468,11 +1468,12 @@ def generateBranchObjects(config, name, secrets=None):
            builder in l10nNightlyBuilders:
             # mozharness repacks
             l10n_builders = l10nNightlyBuilders[builder]['l10n_builder']
-            nomergeBuilders.add(l10n_builder)
+            # nomergeBuilders.add(l10n_builders)
             triggerable_name = l10nNightlyBuilders[builder]['name']
             print "** triggerable_name = {0}".format(triggerable_name)
+            print ""
             triggerable = Triggerable(name=triggerable_name,
-                                      builderNames=l10n_builders,)
+                                      builderNames=l10n_builders)
             branchObjects['schedulers'].append(triggerable)
 
         elif config['enable_l10n'] and \
