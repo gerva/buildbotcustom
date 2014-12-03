@@ -1277,7 +1277,7 @@ def generateBranchObjects(config, name, secrets=None):
                 l10nNightlyBuilders[builder] = {}
                 l10nNightlyBuilders[builder]['l10n_builder'] = builder_names
                 l10nNightlyBuilders[builder]['platform'] = platform
-                l10nNightlyBuilders[builder]['name'] = "%s %s l10n" % (platform
+                l10nNightlyBuilders[builder]['name'] = "%s %s l10n" % (platform,
                                                                        name)
             else:
                 # no repacks with mozharness, old style repacks
