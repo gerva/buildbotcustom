@@ -3374,10 +3374,6 @@ def mh_l10n_builders(config, platform, branch, secrets, is_nightly):
         """
     # let's check if we need to create builders for this config/platform
     builders = []
-    if not is_l10n_with_mh(config, platform):
-        # no mozharness l10n repacks for this platform
-        return builders
-
     l10n_builders = []
     pf = config['platforms'][platform]
     name = pf['base_name']
