@@ -3357,25 +3357,33 @@ def makeLogUploadCommand(branch_name, config, is_try=False, is_shadow=False,
     return logUploadCmd
 
 
-def _is_l10n_enabled_on_this_branch(config):
+def _is_l10n_enabled(config):
+    """returns True if mozharness desktop repacks are enabled"""
     # l10n with mozharness enabled per branch?
-    return config.get('desktop_mozharness_repacks_enabled', False)
+    try:
+        return config['desktop_mozharness_repacks_enabled']
+    except KeyError:
+        return False
 
 
-def _is_l10n_enabled_for_this_platform(config, platform):
+def _is_l10n_capable(config, platform):
+    """returns True if the platform can do desktop repacks with mozharness"""
     # l10n with mozharness enabled per project?
     # platform config
     pf = config['platforms'][platform]
     try:
-        return pf['mozharness_desktop_l10n']['enabled']
+        return pf['mozharness_desktop_l10n']['capable']
     except KeyError:
         return False
 
 
 def is_l10n_with_mh(config, platform):
-    if not _is_l10n_enabled_on_this_branch(config):
+    """mozharness desktop repacks are enabled if they are active on the project
+       and 'patform' is capable of creating repacks.
+    """
+    if not _is_l10n_enabled(config):
         return False
-    return _is_l10n_enabled_for_this_platform(config, platform)
+    return _is_l10n_capable(config, platform)
 
 
 def mh_l10n_builders(config, platform, branch, secrets, is_nightly):
