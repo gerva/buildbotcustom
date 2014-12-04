@@ -3402,9 +3402,12 @@ def mh_l10n_builders(config, platform, branch, secrets, is_nightly):
     config_dir = 'single_locale'
     branch_config = os.path.join(config_dir, '%s.py' % branch)
     platform_config = os.path.join(config_dir, '%s.py' % platform)
-    environment_config = os.path.join(config_dir, 'staging.py')
-    if config.get('staging', False):
-        environment_config = os.path.join(config_dir, 'production.py')
+    environment_config = os.path.join(config_dir, 'production.py')
+    balrog_config = os.path.join('balrog', 'production.py')
+    if config.get('staging', True):
+        # default to staging configuration
+        environment_config = os.path.join(config_dir, 'staging.py')
+        balrog_config = os.path.join('balrog', 'staging.py')
     # desktop repacks run in chunks...
     builder_names = mh_l10n_builder_names(config, platform, is_nightly)
     this_chunk = 0
