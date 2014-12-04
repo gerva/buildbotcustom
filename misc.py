@@ -1016,8 +1016,8 @@ def generateDesktopMozharnessBuilders(name, platform, config, secrets,
             l10nNightlyBuilders['%s nightly' % pf['base_name']]['l10n_builder']
         ]
     elif is_l10n_with_mh(config, platform):
-        builder_names = mh_l10n_builder_names(config, platform, is_nightly=True)
-        triggered_nightly_schedulers.extend(builder_names)
+        scheduler_name = mh_l10n_scheduler_name(config, platform)
+        triggered_nightly_schedulers.append(scheduler_name)
 
     # if we do a generic dep build
     if pf.get('enable_dep', True):
@@ -1274,11 +1274,11 @@ def generateBranchObjects(config, name, secrets=None):
                 # we need this later...
                 builder_names = mh_l10n_builder_names(config, platform,
                                                       is_nightly=True)
+                scheduler_name = mh_l10n_scheduler_name(config, platform)
                 l10nNightlyBuilders[builder] = {}
                 l10nNightlyBuilders[builder]['l10n_builder'] = builder_names
                 l10nNightlyBuilders[builder]['platform'] = platform
-                l10nNightlyBuilders[builder]['name'] = "%s %s l10n" % (platform,
-                                                                       name)
+                l10nNightlyBuilders[builder]['name'] = scheduler_name
             else:
                 # no repacks with mozharness, old style repacks
                 if config['enable_l10n'] and platform in config['l10n_platforms']:
@@ -3446,6 +3446,11 @@ def mh_l10n_builddir_from_builder_name(builder_name):
     b_dir = builder_name.replace(' nightly', '')
     b_dir = b_dir.replace(' ', '-')
     return b_dir.replace('/', '_')
+
+
+def mh_l10n_scheduler_name(config, platform):
+    pf = config['platforms'][platform]
+    return '%s %s nightly' % (platform, pf['base_name'])
 
 
 def mh_l10n_builder_names(config, platform, is_nightly):
