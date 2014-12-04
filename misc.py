@@ -1284,6 +1284,7 @@ def generateBranchObjects(config, name, secrets=None):
                 l10nNightlyBuilders[builder]['l10n_builder'] = builder_names
                 l10nNightlyBuilders[builder]['platform'] = platform
                 l10nNightlyBuilders[builder]['scheduler_name'] = scheduler_name
+                l10nNightlyBuilders[builder]['l10n_repacks_with_mh'] = True
             else:
                 # no repacks with mozharness, old style repacks
                 if config['enable_l10n'] and platform in config['l10n_platforms']:
@@ -1469,9 +1470,9 @@ def generateBranchObjects(config, name, secrets=None):
 
     for builder in nightlyBuilders + xulrunnerNightlyBuilders:
         # looping through l10n builders
-        if config.get('desktop_mozharness_repacks_enabled', False) and \
-           builder in l10nNightlyBuilders:
-            # mozharness repacks
+
+        if 'l10n_repacks_with_mh' in builder:
+            # it's a repacks with mozharness
             l10n_builders = l10nNightlyBuilders[builder]['l10n_builder']
             nomergeBuilders.update(l10n_builders)
             triggerable_name = l10nNightlyBuilders[builder]['scheduler_name']
@@ -2262,7 +2263,6 @@ def generateBranchObjects(config, name, secrets=None):
         # end do_nightly
 
         # We still want l10n_dep builds if nightlies are off
-        # no mozharness desktop repacks if nightlies are off
         if config['enable_l10n'] and config['enable_l10n_onchange'] and \
            platform in config['l10n_platforms']:
                 dep_kwargs = {}
@@ -3357,16 +3357,25 @@ def makeLogUploadCommand(branch_name, config, is_try=False, is_shadow=False,
     return logUploadCmd
 
 
+def _is_l10n_enabled_on_this_branch(config):
+    # l10n with mozharness enabled per branch?
+    return config.get('desktop_mozharness_repacks_enabled', False)
+
+
+def _is_l10n_enabled_for_this_platform(config, platform):
+    # l10n with mozharness enabled per project?
+    # platform config
+    pf = config['platforms'][platform]
+    try:
+        return pf['mozharness_desktop_l10n']['enabled']
+    except KeyError:
+        return False
+
+
 def is_l10n_with_mh(config, platform):
-    enabled = False
-    repacks_enabled = config.get('desktop_mozharness_repacks_enabled', False)
-    if repacks_enabled:
-        # mozharness desktop repacks are enabled for this project_branch
-        # now, let's check if repacks are enabled for this platform too
-        if platform in config['mozharness_desktop_l10n_platforms']:
-            # mozharness desktop repacks are enabled for this platform
-            enabled = True
-    return enabled
+    if not _is_l10n_enabled_on_this_branch(config):
+        return False
+    return _is_l10n_enabled_for_this_platform(config, platform)
 
 
 def mh_l10n_builders(config, platform, branch, secrets, is_nightly):
@@ -3393,7 +3402,9 @@ def mh_l10n_builders(config, platform, branch, secrets, is_nightly):
     config_dir = 'single_locale'
     branch_config = os.path.join(config_dir, '%s.py' % branch)
     platform_config = os.path.join(config_dir, '%s.py' % platform)
-    environment_config = os.path.join(config_dir, 'production.py')
+    environment_config = os.path.join(config_dir, 'staging.py')
+    if config.get('staging', False):
+        environment_config = os.path.join(config_dir, 'production.py')
     # desktop repacks run in chunks...
     builder_names = mh_l10n_builder_names(config, platform, is_nightly)
     this_chunk = 0
