@@ -1278,7 +1278,7 @@ def generateBranchObjects(config, name, secrets=None):
                 l10nNightlyBuilders[builder] = {}
                 l10nNightlyBuilders[builder]['l10n_builder'] = builder_names
                 l10nNightlyBuilders[builder]['platform'] = platform
-                l10nNightlyBuilders[builder]['name'] = scheduler_name
+                l10nNightlyBuilders[builder]['scheduler_name'] = scheduler_name
             else:
                 # no repacks with mozharness, old style repacks
                 if config['enable_l10n'] and platform in config['l10n_platforms']:
@@ -1469,10 +1469,10 @@ def generateBranchObjects(config, name, secrets=None):
             # mozharness repacks
             l10n_builders = l10nNightlyBuilders[builder]['l10n_builder']
             # nomergeBuilders.add(l10n_builders)
-            triggerable_name = l10nNightlyBuilders[builder]['name']
+            triggerable_name = l10nNightlyBuilders[builder]['scheduler_name']
             print "** triggerable_name = {0}".format(triggerable_name)
-            triggerable = Scheduler(name=triggerable_name,
-                                    builderNames=l10n_builders)
+            triggerable = Triggerable(name=triggerable_name,
+                                      builderNames=l10n_builders)
             branchObjects['schedulers'].append(triggerable)
 
         elif config['enable_l10n'] and \
