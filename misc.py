@@ -3418,7 +3418,7 @@ def mh_l10n_builders(config, platform, branch, secrets, is_nightly):
         extra_args = ['--branch-config', branch_config,
                       '--platform-config', platform_config,
                       '--environment-config', environment_config,
-                      '--balrog-config', 'balrog/production.py',
+                      '--balrog-config', balrog_config,
                       '--total-chunks', str(l10n_chunks),
                       '--this-chunk', str(this_chunk)]
         signing_servers = secrets.get(pf.get('nightly_signing_servers'))
