@@ -3450,7 +3450,7 @@ def mh_l10n_builddir_from_builder_name(builder_name):
 
 def mh_l10n_scheduler_name(config, platform):
     pf = config['platforms'][platform]
-    return '%s %s nightly' % (platform, pf['base_name'])
+    return '%s nightly l10n' % (pf['base_name'])
 
 
 def mh_l10n_builder_names(config, platform, is_nightly):
