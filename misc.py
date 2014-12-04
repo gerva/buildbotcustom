@@ -1471,7 +1471,8 @@ def generateBranchObjects(config, name, secrets=None):
     for builder in nightlyBuilders + xulrunnerNightlyBuilders:
         # looping through l10n builders
 
-        if 'l10n_repacks_with_mh' in builder:
+        if builder in l10nNightlyBuilders and \
+           'l10n_repacks_with_mh' in l10nNightlyBuilders[builder]:
             # it's a repacks with mozharness
             l10n_builders = l10nNightlyBuilders[builder]['l10n_builder']
             nomergeBuilders.update(l10n_builders)
