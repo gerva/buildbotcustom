@@ -3374,7 +3374,6 @@ def mh_l10n_builders(config, platform, branch, secrets, is_nightly):
         """
     # let's check if we need to create builders for this config/platform
     builders = []
-    l10n_builders = []
     pf = config['platforms'][platform]
     name = pf['base_name']
     platform_env = pf['env'].copy()
@@ -3402,7 +3401,6 @@ def mh_l10n_builders(config, platform, branch, secrets, is_nightly):
         this_chunk += 1
         builderName = bn
         builddir = mh_l10n_builddir_from_builder_name(bn)
-        l10n_builders.append(builderName)
         extra_args = ['--branch-config', branch_config,
                       '--platform-config', platform_config,
                       '--environment-config', environment_config,
@@ -3456,10 +3454,6 @@ def mh_l10n_scheduler_name(config, platform):
 def mh_l10n_builder_names(config, platform, is_nightly):
     # let's check if we need to create builders for this config/platform
     names = []
-    if not is_l10n_with_mh(config, platform):
-        # no mozharness l10n repacks for this config/platform
-        return names
-
     pf = config['platforms'][platform]
     name = pf['base_name']
     if is_nightly:
